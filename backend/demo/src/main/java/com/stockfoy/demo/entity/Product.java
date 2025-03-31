@@ -1,7 +1,5 @@
 package com.stockfoy.demo.entity;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.*;
 
 
