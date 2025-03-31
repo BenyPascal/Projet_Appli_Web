@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "Products")
+@Table(name = "Produits")
 public class Product {
     
     @Id
@@ -15,7 +15,7 @@ public class Product {
 
     private String categorie;
 
-    private Float conditionnement;
+    private String conditionnement;
 
     private Float prix_HT;
 
@@ -25,6 +25,8 @@ public class Product {
 
     private Float marge_totale;
 
+    public Product(){
+    }
 
     public Integer getidProduct() { 
         return idProduct; 
@@ -50,11 +52,11 @@ public class Product {
         this.categorie = categorie; 
     }
     
-    public Float getConditionnement() { 
+    public String getConditionnement() { 
         return conditionnement; 
     }
 
-    public void setConditionnement(Float conditionnement) { 
+    public void setConditionnement(String conditionnement) { 
         this.conditionnement = conditionnement; 
     }
 
