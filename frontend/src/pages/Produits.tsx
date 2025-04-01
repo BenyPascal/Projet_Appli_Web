@@ -2,14 +2,14 @@
 import { useState, useEffect } from "react";
 import { Search, Filter } from "lucide-react";
 import toast from "react-hot-toast";
-import CreateProduct from "@/components/CreateProduct";
+import CreateProduit from "@/components/CreateProduit";
 
 // Exemple de catégories statiques (si besoin de filtrer en front)
 const categories = ["Sirop", "Boisson", "Autre"];
 
 // Type minimal pour un produit
-export interface Product {
-  idProduct: number;
+export interface Produit {
+  idProduit: number;
   nomProduit: string;
   categorie: string;
   conditionnement: string;
@@ -23,8 +23,8 @@ export interface Product {
  * Composant principal : affiche la liste des produits de la base
  * via un endpoint GET /api/produits sur le backend Spring Boot
  */
-export default function Products() {
-  const [productsList, setProductsList] = useState<Product[]>([]);
+export default function Produits() {
+  const [produitsList, setProduitsList] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Recherche & Catégorie
@@ -34,15 +34,15 @@ export default function Products() {
   // useEffect : aller chercher la liste depuis le backend
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8081/api/products")
+    fetch("http://localhost:8081/api/produits")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des produits");
         }
         return response.json();
       })
-      .then((data: Product[]) => {
-        setProductsList(data);
+      .then((data: Produit[]) => {
+        setProduitsList(data);
         setLoading(false);
       })
       .catch((error) => {
@@ -63,10 +63,10 @@ export default function Products() {
   };
 
   // Filtrage en front : nom + reference + catégorie
-  const filteredProducts = productsList.filter((product) => {
+  const filteredProduits = produitsList.filter((produit) => {
     const matchesSearch =
-      product.nomProduit.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = !selectedCategory || product.categorie === selectedCategory;
+      produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory || produit.categorie === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -147,26 +147,26 @@ export default function Products() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.map((product) => (
-                <tr key={product.idProduct}>
+              {filteredProduits.map((produit) => (
+                <tr key={produit.idProduit}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{product.nomProduit}</div>
+                    <div className="text-sm font-medium text-gray-900">{produit.nomProduit}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{product.categorie}</div>
+                    <div className="text-sm text-gray-500">{produit.categorie}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{product.prixVenteTtc.toFixed(2)} €</div>
+                    <div className="text-sm text-gray-900">{produit.prixVenteTtc.toFixed(2)} €</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{product.conditionnement}</div>
+                    <div className="text-sm text-gray-500">{produit.conditionnement}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{product.tva || "N/A"}</div>
+                    <div className="text-sm text-gray-500">{produit.tva || "N/A"}</div>
                   </td>
                 </tr>
               ))}
-              {filteredProducts.length === 0 && (
+              {filteredProduits.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                     Aucun produit trouvé
@@ -178,7 +178,7 @@ export default function Products() {
         </div>
       </div>
       <div>
-      <CreateProduct/>
+      <CreateProduit/>
       </div>
     </div>
     

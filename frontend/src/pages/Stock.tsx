@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Search, Filter, AlertTriangle, Check, RefreshCw } from "lucide-react"
-import { stock, products, type StockItem, getProductById } from "../data/mockData"
+import { stock, produits, type StockItem, getProduitById } from "../data/mockData"
 import toast from "react-hot-toast"
 
 const Stock = () => {
@@ -38,13 +38,13 @@ const Stock = () => {
   }
 
   const filteredStock = stockList.filter((item) => {
-    const product = getProductById(item.productId)
-    if (!product) return false
+    const produit = getProduitById(item.produitId)
+    if (!produit) return false
 
     const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.reference.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "" || product.category === selectedCategory
+      produit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      produit.reference.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = selectedCategory === "" || produit.category === selectedCategory
     return matchesSearch && matchesCategory
   })
 
@@ -137,7 +137,7 @@ const Stock = () => {
               onChange={handleCategoryChange}
             >
               <option value="">Toutes les catégories</option>
-              {Array.from(new Set(products.map((p) => p.category))).map((category) => (
+              {Array.from(new Set(produits.map((p) => p.category))).map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -199,17 +199,17 @@ const Stock = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredStock.map((stockItem) => {
-                const product = getProductById(stockItem.productId)
+                const produit = getProduitById(stockItem.produitId)
                 const stockStatus = getStockStatus(stockItem)
                 const StatusIcon = stockStatus.icon
 
                 return (
                   <tr key={stockItem.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{product?.category}</div>
+                      <div className="text-sm text-gray-500">{produit?.category}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{stockItem.currentQuantity}</div>
@@ -271,7 +271,7 @@ const Stock = () => {
                       <h3 className="text-lg leading-6 font-medium text-gray-900">Mettre à jour le stock</h3>
                       {currentStock && (
                         <p className="mt-1 text-sm text-gray-500">
-                          Produit: {getProductById(currentStock.productId)?.name}
+                          Produit: {getProduitById(currentStock.produitId)?.name}
                         </p>
                       )}
                       <div className="mt-4 space-y-4">

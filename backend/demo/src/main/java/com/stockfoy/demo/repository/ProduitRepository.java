@@ -4,6 +4,6 @@ import com.stockfoy.demo.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
-public interface ProductRepository extends JpaRepository<Product, Integer> {
+public interface ProduitRepository extends JpaRepository<Produit, Integer> {
     
 }

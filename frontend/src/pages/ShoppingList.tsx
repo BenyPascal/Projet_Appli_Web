@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Plus, Search, Filter, Check, ShoppingCart, Trash2 } from "lucide-react"
-import { shoppingList, products, type ShoppingListItem, getProductById, stock } from "../data/mockData"
+import { shoppingList, produits, type ShoppingListItem, getProduitById, stock } from "../data/mockData"
 import toast from "react-hot-toast"
 
 const ShoppingList = () => {
@@ -15,7 +15,7 @@ const ShoppingList = () => {
   const [priorityFilter, setPriorityFilter] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [formData, setFormData] = useState({
-    productId: "",
+    produitId: "",
     quantityNeeded: "",
     priority: "Moyenne",
   })
@@ -43,10 +43,10 @@ const ShoppingList = () => {
   }
 
   const filteredItems = shoppingItems.filter((item) => {
-    const product = getProductById(item.productId)
-    if (!product) return false
+    const produit = getProduitById(item.produitId)
+    if (!produit) return false
 
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = produit.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "" || item.status === statusFilter
     const matchesPriority = priorityFilter === "" || item.priority === priorityFilter
 
@@ -55,7 +55,7 @@ const ShoppingList = () => {
 
   const handleAddItem = () => {
     setFormData({
-      productId: "",
+      produitId: "",
       quantityNeeded: "",
       priority: "Moyenne",
     })
@@ -71,7 +71,7 @@ const ShoppingList = () => {
     e.preventDefault()
 
     // Validate form
-    if (!formData.productId || !formData.quantityNeeded) {
+    if (!formData.produitId || !formData.quantityNeeded) {
       toast.error("Veuillez remplir tous les champs obligatoires")
       return
     }
@@ -79,7 +79,7 @@ const ShoppingList = () => {
     // Create new shopping list item
     const newItem: ShoppingListItem = {
       id: (shoppingItems.length + 1).toString(),
-      productId: formData.productId,
+      produitId: formData.produitId,
       quantityNeeded: Number.parseInt(formData.quantityNeeded),
       priority: formData.priority as "Haute" | "Moyenne" | "Basse",
       status: "À acheter",
@@ -116,21 +116,21 @@ const ShoppingList = () => {
   }
 
   const generateShoppingList = () => {
-    // Find products with low stock
+    // Find produits with low stock
     const lowStockItems = stock.filter((item) => item.currentQuantity < item.desiredQuantity * 0.7)
 
-    // Create shopping list items for low stock products
+    // Create shopping list items for low stock produits
     const newItems: ShoppingListItem[] = lowStockItems
       .map((stockItem, index) => {
         // Check if item is already in shopping list
-        const existingItem = shoppingItems.find((item) => item.productId === stockItem.productId)
+        const existingItem = shoppingItems.find((item) => item.produitId === stockItem.produitId)
         if (existingItem) return null
 
         const quantityNeeded = stockItem.desiredQuantity - stockItem.currentQuantity
 
         return {
           id: (shoppingItems.length + index + 1).toString(),
-          productId: stockItem.productId,
+          produitId: stockItem.produitId,
           quantityNeeded,
           priority: quantityNeeded > stockItem.desiredQuantity * 0.5 ? "Haute" : "Moyenne",
           status: "À acheter",
@@ -275,7 +275,7 @@ const ShoppingList = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredItems.map((item) => {
-                const product = getProductById(item.productId)
+                const produit = getProduitById(item.produitId)
 
                 let priorityColor = ""
                 if (item.priority === "Haute") {
@@ -298,11 +298,11 @@ const ShoppingList = () => {
                 return (
                   <tr key={item.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {item.quantityNeeded} {product?.unit}
+                        {item.quantityNeeded} {produit?.unit}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -386,21 +386,21 @@ const ShoppingList = () => {
                       </h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="productId" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="produitId" className="block text-sm font-medium text-gray-700">
                             Produit *
                           </label>
                           <select
-                            name="productId"
-                            id="productId"
+                            name="produitId"
+                            id="produitId"
                             required
                             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            value={formData.productId}
+                            value={formData.produitId}
                             onChange={handleFormChange}
                           >
                             <option value="">Sélectionner un produit</option>
-                            {products.map((product) => (
-                              <option key={product.id} value={product.id}>
-                                {product.name}
+                            {produits.map((produit) => (
+                              <option key={produit.id} value={produit.id}>
+                                {produit.name}
                               </option>
                             ))}
                           </select>

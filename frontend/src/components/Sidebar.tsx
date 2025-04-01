@@ -13,7 +13,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const navigation = [
     { name: "Tableau de bord", href: "/", icon: LayoutDashboard },
-    { name: "Produits", href: "/products", icon: Package },
+    { name: "Produits", href: "/produits", icon: Package },
     { name: "Stock", href: "/stock", icon: Layers },
     { name: "Achats", href: "/purchases", icon: ShoppingCart },
     { name: "Ventes", href: "/sales", icon: CreditCard },

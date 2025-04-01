@@ -1,6 +1,6 @@
 // Mock data for the application
 
-// Product categories
+// Produit categories
 export const categories = [
   "Boissons",
   "Snacks",
@@ -11,8 +11,8 @@ export const categories = [
   "Divers",
 ]
 
-// Products
-export interface Product {
+// Produits
+export interface Produit {
   id: string
   name: string
   category: string
@@ -24,7 +24,7 @@ export interface Product {
   updatedAt: string
 }
 
-export const products: Product[] = [
+export const produits: Produit[] = [
   {
     id: "1",
     name: "Coca-Cola",
@@ -118,7 +118,7 @@ export const products: Product[] = [
 // Stock
 export interface StockItem {
   id: string
-  productId: string
+  produitId: string
   currentQuantity: number
   desiredQuantity: number
   lastUpdated: string
@@ -127,56 +127,56 @@ export interface StockItem {
 export const stock: StockItem[] = [
   {
     id: "1",
-    productId: "1",
+    produitId: "1",
     currentQuantity: 45,
     desiredQuantity: 50,
     lastUpdated: "2023-03-10T15:30:00Z",
   },
   {
     id: "2",
-    productId: "2",
+    produitId: "2",
     currentQuantity: 30,
     desiredQuantity: 40,
     lastUpdated: "2023-03-10T15:35:00Z",
   },
   {
     id: "3",
-    productId: "3",
+    produitId: "3",
     currentQuantity: 15,
     desiredQuantity: 25,
     lastUpdated: "2023-03-11T09:20:00Z",
   },
   {
     id: "4",
-    productId: "4",
+    produitId: "4",
     currentQuantity: 20,
     desiredQuantity: 30,
     lastUpdated: "2023-03-11T09:25:00Z",
   },
   {
     id: "5",
-    productId: "5",
+    produitId: "5",
     currentQuantity: 25,
     desiredQuantity: 35,
     lastUpdated: "2023-03-12T11:10:00Z",
   },
   {
     id: "6",
-    productId: "6",
+    produitId: "6",
     currentQuantity: 5,
     desiredQuantity: 10,
     lastUpdated: "2023-03-12T11:15:00Z",
   },
   {
     id: "7",
-    productId: "7",
+    produitId: "7",
     currentQuantity: 3,
     desiredQuantity: 5,
     lastUpdated: "2023-03-13T14:30:00Z",
   },
   {
     id: "8",
-    productId: "8",
+    produitId: "8",
     currentQuantity: 50,
     desiredQuantity: 50,
     lastUpdated: "2023-03-13T14:35:00Z",
@@ -186,7 +186,7 @@ export const stock: StockItem[] = [
 // Purchases
 export interface Purchase {
   id: string
-  productId: string
+  produitId: string
   quantity: number
   unitPrice: number
   totalPrice: number
@@ -198,7 +198,7 @@ export interface Purchase {
 export const purchases: Purchase[] = [
   {
     id: "1",
-    productId: "1",
+    produitId: "1",
     quantity: 50,
     unitPrice: 0.9,
     totalPrice: 45,
@@ -208,7 +208,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "2",
-    productId: "2",
+    produitId: "2",
     quantity: 40,
     unitPrice: 0.6,
     totalPrice: 24,
@@ -218,7 +218,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "3",
-    productId: "3",
+    produitId: "3",
     quantity: 30,
     unitPrice: 1.2,
     totalPrice: 36,
@@ -228,7 +228,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "4",
-    productId: "4",
+    produitId: "4",
     quantity: 40,
     unitPrice: 0.8,
     totalPrice: 32,
@@ -238,7 +238,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "5",
-    productId: "5",
+    produitId: "5",
     quantity: 35,
     unitPrice: 1.0,
     totalPrice: 35,
@@ -248,7 +248,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "6",
-    productId: "6",
+    produitId: "6",
     quantity: 15,
     unitPrice: 2.8,
     totalPrice: 42,
@@ -258,7 +258,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "7",
-    productId: "7",
+    produitId: "7",
     quantity: 5,
     unitPrice: 3.5,
     totalPrice: 17.5,
@@ -268,7 +268,7 @@ export const purchases: Purchase[] = [
   },
   {
     id: "8",
-    productId: "8",
+    produitId: "8",
     quantity: 100,
     unitPrice: 0.5,
     totalPrice: 50,
@@ -281,7 +281,7 @@ export const purchases: Purchase[] = [
 // Sales
 export interface Sale {
   id: string
-  productId: string
+  produitId: string
   quantity: number
   unitPrice: number
   totalPrice: number
@@ -292,7 +292,7 @@ export interface Sale {
 export const sales: Sale[] = [
   {
     id: "1",
-    productId: "1",
+    produitId: "1",
     quantity: 5,
     unitPrice: 1.2,
     totalPrice: 6,
@@ -300,7 +300,7 @@ export const sales: Sale[] = [
   },
   {
     id: "2",
-    productId: "2",
+    produitId: "2",
     quantity: 10,
     unitPrice: 0.8,
     totalPrice: 8,
@@ -308,7 +308,7 @@ export const sales: Sale[] = [
   },
   {
     id: "3",
-    productId: "3",
+    produitId: "3",
     quantity: 8,
     unitPrice: 1.5,
     totalPrice: 12,
@@ -316,7 +316,7 @@ export const sales: Sale[] = [
   },
   {
     id: "4",
-    productId: "4",
+    produitId: "4",
     quantity: 15,
     unitPrice: 1.0,
     totalPrice: 15,
@@ -324,7 +324,7 @@ export const sales: Sale[] = [
   },
   {
     id: "5",
-    productId: "5",
+    produitId: "5",
     quantity: 7,
     unitPrice: 1.3,
     totalPrice: 9.1,
@@ -332,7 +332,7 @@ export const sales: Sale[] = [
   },
   {
     id: "6",
-    productId: "6",
+    produitId: "6",
     quantity: 10,
     unitPrice: 3.5,
     totalPrice: 35,
@@ -426,7 +426,7 @@ export const invoices: Invoice[] = [
 // Shopping List
 export interface ShoppingListItem {
   id: string
-  productId: string
+  produitId: string
   quantityNeeded: number
   priority: "Haute" | "Moyenne" | "Basse"
   status: "À acheter" | "En cours" | "Acheté"
@@ -437,7 +437,7 @@ export interface ShoppingListItem {
 export const shoppingList: ShoppingListItem[] = [
   {
     id: "1",
-    productId: "1",
+    produitId: "1",
     quantityNeeded: 5,
     priority: "Moyenne",
     status: "À acheter",
@@ -446,7 +446,7 @@ export const shoppingList: ShoppingListItem[] = [
   },
   {
     id: "2",
-    productId: "2",
+    produitId: "2",
     quantityNeeded: 10,
     priority: "Haute",
     status: "À acheter",
@@ -455,7 +455,7 @@ export const shoppingList: ShoppingListItem[] = [
   },
   {
     id: "3",
-    productId: "3",
+    produitId: "3",
     quantityNeeded: 10,
     priority: "Basse",
     status: "À acheter",
@@ -464,7 +464,7 @@ export const shoppingList: ShoppingListItem[] = [
   },
   {
     id: "4",
-    productId: "6",
+    produitId: "6",
     quantityNeeded: 5,
     priority: "Haute",
     status: "En cours",
@@ -473,24 +473,24 @@ export const shoppingList: ShoppingListItem[] = [
   },
 ]
 
-// Helper function to get product by ID
-export const getProductById = (id: string): Product | undefined => {
-  return products.find((product) => product.id === id)
+// Helper function to get produit by ID
+export const getProduitById = (id: string): Produit | undefined => {
+  return produits.find((produit) => produit.id === id)
 }
 
-// Helper function to get stock by product ID
-export const getStockByProductId = (productId: string): StockItem | undefined => {
-  return stock.find((item) => item.productId === productId)
+// Helper function to get stock by produit ID
+export const getStockByProduitId = (produitId: string): StockItem | undefined => {
+  return stock.find((item) => item.produitId === produitId)
 }
 
-// Helper function to get purchases by product ID
-export const getPurchasesByProductId = (productId: string): Purchase[] => {
-  return purchases.filter((purchase) => purchase.productId === productId)
+// Helper function to get purchases by produit ID
+export const getPurchasesByProduitId = (produitId: string): Purchase[] => {
+  return purchases.filter((purchase) => purchase.produitId === produitId)
 }
 
-// Helper function to get sales by product ID
-export const getSalesByProductId = (productId: string): Sale[] => {
-  return sales.filter((sale) => sale.productId === productId)
+// Helper function to get sales by produit ID
+export const getSalesByProduitId = (produitId: string): Sale[] => {
+  return sales.filter((sale) => sale.produitId === produitId)
 }
 
 // Helper function to get invoice by ID
@@ -498,15 +498,15 @@ export const getInvoiceById = (id: string): Invoice | undefined => {
   return invoices.find((invoice) => invoice.id === id)
 }
 
-// Helper function to get shopping list items by product ID
-export const getShoppingListItemsByProductId = (productId: string): ShoppingListItem[] => {
-  return shoppingList.filter((item) => item.productId === productId)
+// Helper function to get shopping list items by produit ID
+export const getShoppingListItemsByProduitId = (produitId: string): ShoppingListItem[] => {
+  return shoppingList.filter((item) => item.produitId === produitId)
 }
 
 // Dashboard statistics
 export interface DashboardStats {
-  totalProducts: number
-  lowStockProducts: number
+  totalProduits: number
+  lowStockProduits: number
   totalPurchasesAmount: number
   totalSalesAmount: number
   recentPurchases: Purchase[]
@@ -519,9 +519,9 @@ export interface DashboardStats {
 }
 
 export const getDashboardStats = (): DashboardStats => {
-  const totalProducts = products.length
+  const totalProduits = produits.length
 
-  const lowStockProducts = stock.filter((item) => item.currentQuantity < item.desiredQuantity * 0.5).length
+  const lowStockProduits = stock.filter((item) => item.currentQuantity < item.desiredQuantity * 0.5).length
 
   const totalPurchasesAmount = purchases.reduce((sum, purchase) => sum + purchase.totalPrice, 0)
 
@@ -544,8 +544,8 @@ export const getDashboardStats = (): DashboardStats => {
   }
 
   return {
-    totalProducts,
-    lowStockProducts,
+    totalProduits,
+    lowStockProduits,
     totalPurchasesAmount,
     totalSalesAmount,
     recentPurchases,

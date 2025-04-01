@@ -15,7 +15,7 @@ import {
   Cell,
 } from "recharts"
 import { Package, AlertTriangle, ShoppingCart, CreditCard } from "lucide-react"
-import { getDashboardStats, getProductById } from "../data/mockData"
+import { getDashboardStats, getProduitById } from "../data/mockData"
 
 const Dashboard = () => {
   const [stats, setStats] = useState(getDashboardStats())
@@ -66,7 +66,7 @@ const Dashboard = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Total Produits</p>
-            <p className="text-2xl font-semibold text-gray-900">{stats.totalProducts}</p>
+            <p className="text-2xl font-semibold text-gray-900">{stats.totalProduits}</p>
           </div>
         </div>
 
@@ -76,7 +76,7 @@ const Dashboard = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Stock Faible</p>
-            <p className="text-2xl font-semibold text-gray-900">{stats.lowStockProducts}</p>
+            <p className="text-2xl font-semibold text-gray-900">{stats.lowStockProduits}</p>
           </div>
         </div>
 
@@ -162,13 +162,13 @@ const Dashboard = () => {
           </div>
           <div className="divide-y divide-gray-200">
             {stats.recentPurchases.map((purchase) => {
-              const product = getProductById(purchase.productId)
+              const produit = getProduitById(purchase.produitId)
               return (
                 <div key={purchase.id} className="px-6 py-4 flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">{product?.name}</p>
+                    <p className="font-medium text-gray-900">{produit?.name}</p>
                     <p className="text-sm text-gray-500">
-                      {new Date(purchase.purchaseDate).toLocaleDateString()} - {purchase.quantity} {product?.unit}
+                      {new Date(purchase.purchaseDate).toLocaleDateString()} - {purchase.quantity} {produit?.unit}
                     </p>
                   </div>
                   <p className="font-medium text-gray-900">{purchase.totalPrice.toFixed(2)} €</p>
@@ -187,13 +187,13 @@ const Dashboard = () => {
           </div>
           <div className="divide-y divide-gray-200">
             {stats.recentSales.map((sale) => {
-              const product = getProductById(sale.productId)
+              const produit = getProduitById(sale.produitId)
               return (
                 <div key={sale.id} className="px-6 py-4 flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900">{product?.name}</p>
+                    <p className="font-medium text-gray-900">{produit?.name}</p>
                     <p className="text-sm text-gray-500">
-                      {new Date(sale.saleDate).toLocaleDateString()} - {sale.quantity} {product?.unit}
+                      {new Date(sale.saleDate).toLocaleDateString()} - {sale.quantity} {produit?.unit}
                     </p>
                   </div>
                   <p className="font-medium text-gray-900">{sale.totalPrice.toFixed(2)} €</p>
@@ -208,7 +208,7 @@ const Dashboard = () => {
       </div>
 
       {/* Low Stock Alert */}
-      {stats.lowStockProducts > 0 && (
+      {stats.lowStockProduits > 0 && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
@@ -216,7 +216,7 @@ const Dashboard = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-red-700">
-                <span className="font-medium">Alerte stock faible!</span> {stats.lowStockProducts} produits ont un
+                <span className="font-medium">Alerte stock faible!</span> {stats.lowStockProduits} produits ont un
                 niveau de stock critique.
               </p>
             </div>

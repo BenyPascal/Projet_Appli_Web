@@ -14,7 +14,7 @@ public class Achat {
 
     @ManyToOne
     @JoinColumn(name = "idProduit")
-    private Product product;
+    private Produit produit;
 
     private Integer quantite;
 
@@ -26,12 +26,12 @@ public class Achat {
         this.idAchat = idAchat; 
     }
 
-    public Product getProduct() { 
-        return product; 
+    public Produit getProduit() { 
+        return produit; 
     }
     
-    public void setProduct(Product product) { 
-        this.product = product; 
+    public void setProduit(Produit produit) { 
+        this.produit = produit; 
     }
     
     public Integer getQuantite() { 

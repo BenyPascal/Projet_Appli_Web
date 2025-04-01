@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Product } from "../data/type"; // Ajuste le chemin
+import { Produit } from "../data/type"; // Ajuste le chemin
 
-export default function CreateProduct() {
+export default function CreateProduit() {
   // On stocke les valeurs du formulaire au format string pour pouvoir
   // récupérer la saisie utilisateur, puis on convertira en number quand on POST.
   const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ export default function CreateProduct() {
     e.preventDefault();
 
     // Convertir les champs string en nombre
-    const payload: Omit<Product, "idProduit"> = {
+    const payload: Omit<Produit, "idProduit"> = {
       nomProduit: formData.nomProduit,
       categorie: formData.categorie,
       conditionnement: formData.conditionnement,
@@ -38,7 +38,7 @@ export default function CreateProduct() {
     };
 
     try {
-      const response = await fetch("http://localhost:8081/api/products", {
+      const response = await fetch("http://localhost:8081/api/produits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -48,9 +48,9 @@ export default function CreateProduct() {
         throw new Error("Erreur lors de la création du produit");
       }
 
-      const createdProduct = await response.json(); // L'objet créé, renvoyé par le backend
+      const createdProduit = await response.json(); // L'objet créé, renvoyé par le backend
       setMessage(
-        `Produit créé avec succès : ${createdProduct.nomProduit} (ID: ${createdProduct.idProduit})`
+        `Produit créé avec succès : ${createdProduit.nomProduit} (ID: ${createdProduit.idProduit})`
       );
 
       // Réinitialiser le formulaire

@@ -6,28 +6,28 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.stockfoy.demo.entity.Product;
-import com.stockfoy.demo.services.ProductService;
+import com.stockfoy.demo.entity.Produit;
+import com.stockfoy.demo.services.ProduitService;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/products")
-public class ProductController {
-    private final ProductService productService;
+@RequestMapping("/api/produits")
+public class ProduitController {
+    private final ProduitService produitService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    public ProduitController(ProduitService produitService) {
+        this.produitService = produitService;
     }
 
     @GetMapping
-    public List<Product> getAllProduits() {
-        return productService.findAll();
+    public List<Produit> getAllProduits() {
+        return produitService.findAll();
     }
 
     @PostMapping
-    public Product createProduit(@RequestBody Product produit) {
-        return productService.save(produit);
+    public Produit createProduit(@RequestBody Produit produit) {
+        return produitService.save(produit);
     }
 }
 

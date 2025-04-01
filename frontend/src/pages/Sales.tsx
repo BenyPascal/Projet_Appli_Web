@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Plus, Search, Filter, Eye } from "lucide-react"
-import { sales, products, type Sale, getProductById } from "../data/mockData"
+import { sales, produits, type Sale, getProduitById } from "../data/mockData"
 import toast from "react-hot-toast"
 
 const Sales = () => {
@@ -16,7 +16,7 @@ const Sales = () => {
   const [showViewModal, setShowViewModal] = useState(false)
   const [currentSale, setCurrentSale] = useState<Sale | null>(null)
   const [formData, setFormData] = useState({
-    productId: "",
+    produitId: "",
     quantity: "",
     unitPrice: "",
     customer: "",
@@ -41,11 +41,11 @@ const Sales = () => {
   }
 
   const filteredSales = salesList.filter((sale) => {
-    const product = getProductById(sale.productId)
-    if (!product) return false
+    const produit = getProduitById(sale.produitId)
+    if (!produit) return false
 
     const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      produit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (sale.customer && sale.customer.toLowerCase().includes(searchTerm.toLowerCase()))
 
     let matchesDate = true
@@ -69,7 +69,7 @@ const Sales = () => {
 
   const handleAddSale = () => {
     setFormData({
-      productId: "",
+      produitId: "",
       quantity: "",
       unitPrice: "",
       customer: "",
@@ -85,13 +85,13 @@ const Sales = () => {
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
 
-    if (name === "productId" && value) {
-      const product = getProductById(value)
-      if (product) {
+    if (name === "produitId" && value) {
+      const produit = getProduitById(value)
+      if (produit) {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
-          unitPrice: product.price.toString(),
+          unitPrice: produit.price.toString(),
         }))
         return
       }
@@ -104,7 +104,7 @@ const Sales = () => {
     e.preventDefault()
 
     // Validate form
-    if (!formData.productId || !formData.quantity || !formData.unitPrice) {
+    if (!formData.produitId || !formData.quantity || !formData.unitPrice) {
       toast.error("Veuillez remplir tous les champs obligatoires")
       return
     }
@@ -117,7 +117,7 @@ const Sales = () => {
     // Create new sale
     const newSale: Sale = {
       id: (salesList.length + 1).toString(),
-      productId: formData.productId,
+      produitId: formData.produitId,
       quantity,
       unitPrice,
       totalPrice,
@@ -238,15 +238,15 @@ const Sales = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredSales.map((sale) => {
-                const product = getProductById(sale.productId)
+                const produit = getProduitById(sale.produitId)
                 return (
                   <tr key={sale.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {sale.quantity} {product?.unit}
+                        {sale.quantity} {produit?.unit}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -299,21 +299,21 @@ const Sales = () => {
                       <h3 className="text-lg leading-6 font-medium text-gray-900">Ajouter une vente</h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="productId" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="produitId" className="block text-sm font-medium text-gray-700">
                             Produit *
                           </label>
                           <select
-                            name="productId"
-                            id="productId"
+                            name="produitId"
+                            id="produitId"
                             required
                             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            value={formData.productId}
+                            value={formData.produitId}
                             onChange={handleFormChange}
                           >
                             <option value="">Sélectionner un produit</option>
-                            {products.map((product) => (
-                              <option key={product.id} value={product.id}>
-                                {product.name}
+                            {produits.map((produit) => (
+                              <option key={produit.id} value={produit.id}>
+                                {produit.name}
                               </option>
                             ))}
                           </select>
@@ -407,12 +407,12 @@ const Sales = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm font-medium text-gray-500">Produit</p>
-                            <p className="mt-1 text-sm text-gray-900">{getProductById(currentSale.productId)?.name}</p>
+                            <p className="mt-1 text-sm text-gray-900">{getProduitById(currentSale.produitId)?.name}</p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Quantité</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {currentSale.quantity} {getProductById(currentSale.productId)?.unit}
+                              {currentSale.quantity} {getProduitById(currentSale.produitId)?.unit}
                             </p>
                           </div>
                           <div>

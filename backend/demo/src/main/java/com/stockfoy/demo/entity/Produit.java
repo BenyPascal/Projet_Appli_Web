@@ -5,11 +5,11 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Produits")
-public class Product {
+public class Produit {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idProduct;
+    private Integer idProduit;
 
     private String nomProduit;
 
@@ -25,15 +25,15 @@ public class Product {
 
     private Float marge_totale;
 
-    public Product(){
+    public Produit(){
     }
 
-    public Integer getidProduct() { 
-        return idProduct; 
+    public Integer getidProduit() { 
+        return idProduit; 
     }
 
-    public void setidProduct(Integer idProduct) { 
-        this.idProduct = idProduct; 
+    public void setidProduit(Integer idProduit) { 
+        this.idProduit = idProduit; 
     }
 
     public String getNomProduit() { 

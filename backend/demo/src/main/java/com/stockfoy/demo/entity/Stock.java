@@ -12,8 +12,8 @@ public class Stock {
     private Integer idStock;
 
     @ManyToOne
-    @JoinColumn(name = "idProduct")
-    private Product product;
+    @JoinColumn(name = "idProduit")
+    private Produit produit;
 
     private Integer quantiteDisponible;
 
@@ -27,12 +27,12 @@ public class Stock {
         this.idStock = idStock; 
     }
 
-    public Product getProduct() { 
-        return product; 
+    public Produit getProduit() { 
+        return produit; 
     }
 
-    public void setProduct(Product product) { 
-        this.product = product; 
+    public void setProduit(Produit produit) { 
+        this.produit = produit; 
     }
 
     public Integer getQuantiteDisponible() {

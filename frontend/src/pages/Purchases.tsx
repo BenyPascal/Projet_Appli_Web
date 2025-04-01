@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Plus, Search, Filter, FileText, Eye } from "lucide-react"
-import { purchases, products, type Purchase, getProductById } from "../data/mockData"
+import { purchases, produits, type Purchase, getProduitById } from "../data/mockData"
 import toast from "react-hot-toast"
 
 const Purchases = () => {
@@ -16,7 +16,7 @@ const Purchases = () => {
   const [showViewModal, setShowViewModal] = useState(false)
   const [currentPurchase, setCurrentPurchase] = useState<Purchase | null>(null)
   const [formData, setFormData] = useState({
-    productId: "",
+    produitId: "",
     quantity: "",
     unitPrice: "",
     supplier: "",
@@ -42,11 +42,11 @@ const Purchases = () => {
   }
 
   const filteredPurchases = purchasesList.filter((purchase) => {
-    const product = getProductById(purchase.productId)
-    if (!product) return false
+    const produit = getProduitById(purchase.produitId)
+    if (!produit) return false
 
     const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      produit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (purchase.invoiceNumber && purchase.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesSupplier = selectedSupplier === "" || purchase.supplier === selectedSupplier
     return matchesSearch && matchesSupplier
@@ -56,7 +56,7 @@ const Purchases = () => {
 
   const handleAddPurchase = () => {
     setFormData({
-      productId: "",
+      produitId: "",
       quantity: "",
       unitPrice: "",
       supplier: "",
@@ -79,7 +79,7 @@ const Purchases = () => {
     e.preventDefault()
 
     // Validate form
-    if (!formData.productId || !formData.quantity || !formData.unitPrice || !formData.supplier) {
+    if (!formData.produitId || !formData.quantity || !formData.unitPrice || !formData.supplier) {
       toast.error("Veuillez remplir tous les champs obligatoires")
       return
     }
@@ -92,7 +92,7 @@ const Purchases = () => {
     // Create new purchase
     const newPurchase: Purchase = {
       id: (purchasesList.length + 1).toString(),
-      productId: formData.productId,
+      produitId: formData.produitId,
       quantity,
       unitPrice,
       totalPrice,
@@ -222,15 +222,15 @@ const Purchases = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredPurchases.map((purchase) => {
-                const product = getProductById(purchase.productId)
+                const produit = getProduitById(purchase.produitId)
                 return (
                   <tr key={purchase.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {purchase.quantity} {product?.unit}
+                        {purchase.quantity} {produit?.unit}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -300,21 +300,21 @@ const Purchases = () => {
                       <h3 className="text-lg leading-6 font-medium text-gray-900">Ajouter un achat</h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="productId" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="produitId" className="block text-sm font-medium text-gray-700">
                             Produit *
                           </label>
                           <select
-                            name="productId"
-                            id="productId"
+                            name="produitId"
+                            id="produitId"
                             required
                             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            value={formData.productId}
+                            value={formData.produitId}
                             onChange={handleFormChange}
                           >
                             <option value="">Sélectionner un produit</option>
-                            {products.map((product) => (
-                              <option key={product.id} value={product.id}>
-                                {product.name}
+                            {produits.map((produit) => (
+                              <option key={produit.id} value={produit.id}>
+                                {produit.name}
                               </option>
                             ))}
                           </select>
@@ -423,13 +423,13 @@ const Purchases = () => {
                           <div>
                             <p className="text-sm font-medium text-gray-500">Produit</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {getProductById(currentPurchase.productId)?.name}
+                              {getProduitById(currentPurchase.produitId)?.name}
                             </p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Quantité</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {currentPurchase.quantity} {getProductById(currentPurchase.productId)?.unit}
+                              {currentPurchase.quantity} {getProduitById(currentPurchase.produitId)?.unit}
                             </p>
                           </div>
                           <div>
