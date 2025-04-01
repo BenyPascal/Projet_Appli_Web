@@ -15,7 +15,7 @@ public class Produit {
 
     private String categorie;
 
-    private String conditionnement;
+    private Float conditionnement;
 
     private Float prix_HT;
 
@@ -52,11 +52,11 @@ public class Produit {
         this.categorie = categorie; 
     }
     
-    public String getConditionnement() { 
+    public Float getConditionnement() { 
         return conditionnement; 
     }
 
-    public void setConditionnement(String conditionnement) { 
+    public void setConditionnement(Float conditionnement) { 
         this.conditionnement = conditionnement; 
     }
 
