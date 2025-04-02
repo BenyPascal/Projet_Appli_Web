@@ -30,4 +30,5 @@ public class StockController {
     public Stock updateStock(@PathVariable Integer id,  @RequestBody Stock updatedStock) {
         return stockService.updateStock(id, updatedStock);
     }
+    
 }

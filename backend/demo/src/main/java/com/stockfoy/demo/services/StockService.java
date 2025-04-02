@@ -1,5 +1,6 @@
 package com.stockfoy.demo.services;
 
+import com.stockfoy.demo.entity.Produit;
 import com.stockfoy.demo.entity.Stock;
 import com.stockfoy.demo.repository.StockRepository;
 import org.springframework.stereotype.Service;
@@ -29,5 +30,14 @@ public class StockService {
         } else {
             throw new RuntimeException("Stock non trouvé avec l'ID : " + id);
         }
+    }
+
+    public Stock createInitialStock(Produit produit) {
+        Stock newStock = new Stock();
+        newStock.setProduit(produit);
+        newStock.setQuantiteDisponible(0);
+        newStock.setQuantitePrecedente(0);
+        newStock.setQuantiteVoulue(0);
+        return stockRepository.save(newStock);
     }
 }

@@ -18,7 +18,18 @@ export default function CreateProduit({ onProduitCreated }: CreateProduitProps) 
 
   const [message, setMessage] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Liste des catégories prédéfinies
+  const categorieOptions = [
+    "Sirop",
+    "Cannette / Jus",
+    "Consommable Sucré",
+    "Consommable Salé",
+    "Café / Thé",
+    "Viennoiserie",
+    "Autre"
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -89,13 +100,19 @@ export default function CreateProduit({ onProduitCreated }: CreateProduitProps) 
 
         <div>
           <label className="block mb-1">Catégorie :</label>
-          <input
-            type="text"
+          <select
             name="categorie"
             value={formData.categorie}
             onChange={handleChange}
             className="border p-1 w-full"
-          />
+          >
+            <option value="">Sélectionnez une catégorie</option>
+            {categorieOptions.map((option, index) => (
+              <option key={index} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

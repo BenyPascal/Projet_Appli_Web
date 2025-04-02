@@ -23,7 +23,13 @@ export default function Stocks() {
       })
       .then((data: Stock[]) => {
         console.log("Données des stocks :", data); // Log pour vérifier les données
-        setStocksList(data);
+        
+        // Trier les stocks par catégorie de produit
+        const sortedData = [...data].sort((a, b) => 
+          a.produit.categorie.localeCompare(b.produit.categorie)
+        );
+        
+        setStocksList(sortedData);
         setLoading(false);
       })
       .catch((error) => {
@@ -43,13 +49,18 @@ export default function Stocks() {
 
   const handleUpdateStock = (idStock: number, newQuantity: number) => {
     // Mettre à jour la quantité dans la liste des stocks
-    setStocksList((prevStocks) =>
-      prevStocks.map((stock) =>
+    setStocksList((prevStocks) => {
+      const updatedStocks = prevStocks.map((stock) =>
         stock.idStock === idStock
           ? { ...stock, quantiteDisponible: newQuantity }
           : stock
-      )
-    );
+      );
+      
+      // Maintenir le tri par catégorie après la mise à jour
+      return [...updatedStocks].sort((a, b) => 
+        a.produit.categorie.localeCompare(b.produit.categorie)
+      );
+    });
 
     // Envoyer la mise à jour au serveur (optionnel)
     fetch(`http://localhost:8081/api/stocks/${idStock}`, {
