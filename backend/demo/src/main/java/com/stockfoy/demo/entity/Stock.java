@@ -1,5 +1,7 @@
 package com.stockfoy.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -15,9 +17,12 @@ public class Stock {
     @JoinColumn(name = "idProduit")
     private Produit produit;
 
+    @JsonProperty("quantiteDisponible")
     private Integer quantiteDisponible;
 
     private Integer quantiteVoulue;
+
+    private Integer quantitePrecedente;
 
     public Integer getIdStock() { 
         return idStock; 
@@ -49,5 +54,13 @@ public class Stock {
 
     public void setQuantiteVoulue(Integer quantiteVoulue) { 
         this.quantiteVoulue = quantiteVoulue; 
+    }
+
+    public Integer getQuantitePrecedente() { 
+        return quantitePrecedente; 
+    }
+
+    public void setQuantitePrecedente(Integer quantitePrecedente) { 
+        this.quantitePrecedente = quantitePrecedente;
     }
 }

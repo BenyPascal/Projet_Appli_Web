@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Produit } from "../data/type"; // Ajuste le chemin
+import { Produit } from "../data/type";
 
-export default function CreateProduit() {
-  // On stocke les valeurs du formulaire au format string pour pouvoir
-  // récupérer la saisie utilisateur, puis on convertira en number quand on POST.
+interface CreateProduitProps {
+  onProduitCreated: (produit: Produit) => void;
+}
+
+export default function CreateProduit({ onProduitCreated }: CreateProduitProps) {
   const [formData, setFormData] = useState({
     nomProduit: "",
     categorie: "",
@@ -16,21 +18,18 @@ export default function CreateProduit() {
 
   const [message, setMessage] = useState("");
 
-  // Fonction pour gérer le changement dans les champs du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Soumission du formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Convertir les champs string en nombre
     const payload: Omit<Produit, "idProduit"> = {
       nomProduit: formData.nomProduit,
       categorie: formData.categorie,
-      conditionnement: formData.conditionnement,
+      conditionnement: parseFloat(formData.conditionnement),
       prixAchatHt: parseFloat(formData.prixAchatHt),
       tva: parseFloat(formData.tva),
       prixVenteTtc: parseFloat(formData.prixVenteTtc),
@@ -48,12 +47,14 @@ export default function CreateProduit() {
         throw new Error("Erreur lors de la création du produit");
       }
 
-      const createdProduit = await response.json(); // L'objet créé, renvoyé par le backend
+      const createdProduit = await response.json();
+
+      onProduitCreated(createdProduit);
+
       setMessage(
         `Produit créé avec succès : ${createdProduit.nomProduit} (ID: ${createdProduit.idProduit})`
       );
 
-      // Réinitialiser le formulaire
       setFormData({
         nomProduit: "",
         categorie: "",
@@ -100,7 +101,7 @@ export default function CreateProduit() {
         <div>
           <label className="block mb-1">Conditionnement :</label>
           <input
-            type="text"
+            type="number"
             name="conditionnement"
             value={formData.conditionnement}
             onChange={handleChange}

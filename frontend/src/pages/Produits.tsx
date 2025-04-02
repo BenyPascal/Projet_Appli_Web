@@ -1,37 +1,25 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Filter } from "lucide-react";
 import toast from "react-hot-toast";
 import CreateProduit from "@/components/CreateProduit";
+import { Produit } from "../data/type";
 
-// Exemple de catégories statiques (si besoin de filtrer en front)
 const categories = ["Sirop", "Boisson", "Autre"];
 
-// Type minimal pour un produit
-export interface Produit {
-  idProduit: number;
-  nomProduit: string;
-  categorie: string;
-  conditionnement: string;
-  prixAchatHt?: number;
-  tva: number;
-  prixVenteTtc: number;
-  margeTotale: number;
-}
-
-/**
- * Composant principal : affiche la liste des produits de la base
- * via un endpoint GET /api/produits sur le backend Spring Boot
- */
 export default function Produits() {
   const [produitsList, setProduitsList] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false); // État pour la fenêtre modale
+  const modalRef = useRef<HTMLDivElement>(null); // Référence pour la fenêtre modale
 
-  // Recherche & Catégorie
+  const addProduit = (newProduit: Produit) => {
+    setProduitsList((prevList) => [...prevList, newProduit]);
+  };
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  // useEffect : aller chercher la liste depuis le backend
   useEffect(() => {
     setLoading(true);
     fetch("http://localhost:8081/api/produits")
@@ -52,21 +40,37 @@ export default function Produits() {
       });
   }, []);
 
-  // Gestion de la barre de recherche
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  // Gestion du select catégorie
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(e.target.value);
   };
 
-  // Filtrage en front : nom + reference + catégorie
+  const handleOutsideClick = (e: MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      setIsModalOpen(false); // Ferme la fenêtre modale si on clique à l'extérieur
+    }
+  };
+
+  useEffect(() => {
+    if (isModalOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [isModalOpen]);
+
   const filteredProduits = produitsList.filter((produit) => {
-    const matchesSearch =
-      produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = !selectedCategory || produit.categorie === selectedCategory;
+    const matchesSearch = produit.nomProduit
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || produit.categorie === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -82,6 +86,12 @@ export default function Produits() {
     <div className="space-y-6 p-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Gestion des Produits</h1>
+        <button
+          onClick={() => setIsModalOpen(true)} // Ouvre la fenêtre modale
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Ajouter un produit
+        </button>
       </div>
 
       {/* Filtres */}
@@ -150,16 +160,22 @@ export default function Produits() {
               {filteredProduits.map((produit) => (
                 <tr key={produit.idProduit}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{produit.nomProduit}</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {produit.nomProduit}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">{produit.categorie}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{produit.prixVenteTtc.toFixed(2)} €</div>
+                    <div className="text-sm text-gray-900">
+                      {produit.prixVenteTtc?.toFixed(2)} €
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{produit.conditionnement}</div>
+                    <div className="text-sm text-gray-500">
+                      {produit.conditionnement}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">{produit.tva || "N/A"}</div>
@@ -168,7 +184,10 @@ export default function Produits() {
               ))}
               {filteredProduits.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={6}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     Aucun produit trouvé
                   </td>
                 </tr>
@@ -177,10 +196,29 @@ export default function Produits() {
           </table>
         </div>
       </div>
-      <div>
-      <CreateProduit/>
-      </div>
+
+      {/* Fenêtre modale */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            ref={modalRef} // Référence pour détecter les clics à l'extérieur
+            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative"
+          >
+            <button
+              onClick={() => setIsModalOpen(false)} // Ferme la fenêtre modale
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <CreateProduit
+              onProduitCreated={(produit) => {
+                addProduit(produit);
+                setIsModalOpen(false); // Ferme la fenêtre après création
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
-    
   );
 }
