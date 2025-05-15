@@ -14,6 +14,7 @@ export default function CreateProduit({ onProduitCreated }: CreateProduitProps) 
     tva: "",
     prixVenteTtc: "",
     margeTotale: "",
+    quantiteVoulue: "",
   });
 
   const [message, setMessage] = useState("");
@@ -45,6 +46,7 @@ export default function CreateProduit({ onProduitCreated }: CreateProduitProps) 
       tva: parseFloat(formData.tva),
       prixVenteTtc: parseFloat(formData.prixVenteTtc),
       margeTotale: parseFloat(formData.margeTotale),
+      quantiteVoulue: parseFloat(formData.quantiteVoulue),
     };
 
     try {
@@ -74,6 +76,7 @@ export default function CreateProduit({ onProduitCreated }: CreateProduitProps) 
         tva: "",
         prixVenteTtc: "",
         margeTotale: "",
+        quantiteVoulue: "",
       });
     } catch (error) {
       console.error(error);
@@ -169,6 +172,18 @@ export default function CreateProduit({ onProduitCreated }: CreateProduitProps) 
             name="margeTotale"
             step="0.01"
             value={formData.margeTotale}
+            onChange={handleChange}
+            className="border p-1 w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Quantité voulue :</label>
+          <input
+            type="number"
+            name="quantiteVoulue"
+            step="0.01"
+            value={formData.quantiteVoulue}
             onChange={handleChange}
             className="border p-1 w-full"
           />

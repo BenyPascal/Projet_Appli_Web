@@ -25,6 +25,8 @@ public class Produit {
 
     private Float marge_totale;
 
+    private Integer quantite_voulue;
+
     public Produit(){
     }
 
@@ -90,5 +92,13 @@ public class Produit {
 
     public void setMargeTotale(Float marge_totale) { 
         this.marge_totale = marge_totale; 
+    }
+
+    public Integer getQuantiteVoulue() { 
+        return quantite_voulue; 
+    }
+
+    public void setQuantiteVoulue(Integer quantite_voulue) { 
+        this.quantite_voulue = quantite_voulue; 
     }
 }

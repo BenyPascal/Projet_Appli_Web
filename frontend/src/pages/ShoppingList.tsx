@@ -141,7 +141,7 @@ const ShoppingList = () => {
       .filter(Boolean) as ShoppingListItem[]
 
     if (newItems.length === 0) {
-      toast.info("Aucun produit à ajouter à la liste de courses")
+      toast("Aucun produit à ajouter à la liste de courses")
       return
     }
 

@@ -37,7 +37,7 @@ public class StockService {
         newStock.setProduit(produit);
         newStock.setQuantiteDisponible(0);
         newStock.setQuantitePrecedente(0);
-        newStock.setQuantiteVoulue(0);
+        newStock.setQuantiteVoulue(produit.getQuantiteVoulue());
         return stockRepository.save(newStock);
     }
 }
