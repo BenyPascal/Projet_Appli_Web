@@ -1,9 +1,7 @@
 package com.stockfoy.demo.services;
 
 import com.stockfoy.demo.entity.Produit;
-import com.stockfoy.demo.entity.Stock;
 import com.stockfoy.demo.repository.ProduitRepository;
-import com.stockfoy.demo.services.StockService;
 
 import java.util.List;
 

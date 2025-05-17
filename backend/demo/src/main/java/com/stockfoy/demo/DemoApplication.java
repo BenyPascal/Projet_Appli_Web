@@ -11,3 +11,7 @@ public class DemoApplication {
 	}
 
 }
+
+
+// curl -X POST http://localhost:8081/api/courses/generer
+// curl -X POST "http://localhost:8081/api/achats/ajouter?idProduit=1&quantiteAchat=24"
