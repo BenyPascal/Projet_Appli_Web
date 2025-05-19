@@ -3,15 +3,24 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Filter, FileText, Eye } from "lucide-react"
-import { purchases, produits, type Purchase, getProduitById } from "../data/mockData"
+import { Plus, Search, Eye } from "lucide-react"
+import { type Produit as ProduitApi } from "../data/type"
 import toast from "react-hot-toast"
+
+// Only the fields present in the backend response
+interface Purchase {
+  id: string
+  produitId: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+}
 
 const Purchases = () => {
   const [purchasesList, setPurchasesList] = useState<Purchase[]>([])
+  const [produits, setProduits] = useState<ProduitApi[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedSupplier, setSelectedSupplier] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [currentPurchase, setCurrentPurchase] = useState<Purchase | null>(null)
@@ -19,48 +28,76 @@ const Purchases = () => {
     produitId: "",
     quantity: "",
     unitPrice: "",
-    supplier: "",
-    invoiceNumber: "",
   })
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setPurchasesList(purchases)
-      setLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
+    setLoading(true)
+    fetch("http://localhost:8081/api/achats")
+      .then((res) => {
+        if (!res.ok) throw new Error("Erreur lors du chargement des achats")
+        return res.json()
+      })
+      .then((data) => {
+        // Adapt mapping to backend response
+        const mapped = Array.isArray(data)
+          ? data.map((achat: any) => ({
+              id: achat.idAchat?.toString() || "",
+              produitId: achat.produit?.idProduit?.toString() || "",
+              quantity: achat.quantite || 0,
+              unitPrice: achat.prixUnitaire || 0,
+              totalPrice: achat.prixTotal || 0,
+            }))
+          : []
+        setPurchasesList(mapped)
+        setLoading(false)
+      })
+      .catch(() => {
+        toast.error("Erreur lors du chargement des achats")
+        setLoading(false)
+      })
   }, [])
+
+  // Fetch products from backend and robustly map to Produit type
+  useEffect(() => {
+    setLoading(true);
+    fetch("http://localhost:8081/api/produits")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des produits");
+        }
+        return response.json();
+      })
+      .then((data: ProduitApi[]) => {
+        setProduits(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Erreur:", error);
+        toast.error("Impossible de charger les produits");
+        setLoading(false);
+      });
+  }, []);
+
+  // Helper to get product by id from fetched produits
+  const getProduitById = (id: string) => produits.find((p) => p.idProduit?.toString() === id)
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
   }
 
-  const handleSupplierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSupplier(e.target.value)
-  }
-
   const filteredPurchases = purchasesList.filter((purchase) => {
     const produit = getProduitById(purchase.produitId)
     if (!produit) return false
-
     const matchesSearch =
-      produit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (purchase.invoiceNumber && purchase.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesSupplier = selectedSupplier === "" || purchase.supplier === selectedSupplier
-    return matchesSearch && matchesSupplier
+      (produit.nomProduit || "").toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesSearch
   })
-
-  const suppliers = Array.from(new Set(purchases.map((p) => p.supplier)))
 
   const handleAddPurchase = () => {
     setFormData({
       produitId: "",
       quantity: "",
       unitPrice: "",
-      supplier: "",
-      invoiceNumber: "",
     })
     setShowAddModal(true)
   }
@@ -75,36 +112,35 @@ const Purchases = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    // Validate form
-    if (!formData.produitId || !formData.quantity || !formData.unitPrice || !formData.supplier) {
+    if (!formData.produitId || !formData.quantity) {
       toast.error("Veuillez remplir tous les champs obligatoires")
       return
     }
-
-    // Calculate total price
-    const quantity = Number.parseInt(formData.quantity)
-    const unitPrice = Number.parseFloat(formData.unitPrice)
-    const totalPrice = quantity * unitPrice
-
-    // Create new purchase
-    const newPurchase: Purchase = {
-      id: (purchasesList.length + 1).toString(),
-      produitId: formData.produitId,
-      quantity,
-      unitPrice,
-      totalPrice,
-      supplier: formData.supplier,
-      purchaseDate: new Date().toISOString(),
-      invoiceNumber: formData.invoiceNumber || undefined,
+    try {
+      const params = new URLSearchParams()
+      params.append("idProduit", formData.produitId)
+      params.append("quantiteAchat", formData.quantity)
+      const res = await fetch("http://localhost:8081/api/achats/ajouter", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      })
+      if (!res.ok) throw new Error("Erreur lors de l'ajout de l'achat")
+      const achat = await res.json()
+      setPurchasesList((prev) => [...prev, {
+        id: achat.id?.toString() || (prev.length + 1).toString(),
+        produitId: achat.produit?.id?.toString() || formData.produitId,
+        quantity: achat.quantiteAchat || Number(formData.quantity),
+        unitPrice: achat.prixUnitaire || Number(formData.unitPrice),
+        totalPrice: achat.prixTotal || (Number(formData.quantity) * Number(formData.unitPrice)),
+      }])
+      setShowAddModal(false)
+      toast.success("Achat ajouté avec succès")
+    } catch (err) {
+      toast.error("Erreur lors de l'ajout de l'achat")
     }
-
-    // Add to list
-    setPurchasesList([...purchasesList, newPurchase])
-    setShowAddModal(false)
-    toast.success("Achat ajouté avec succès")
   }
 
   if (loading) {
@@ -143,24 +179,6 @@ const Purchases = () => {
               onChange={handleSearchChange}
             />
           </div>
-
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Filter className="h-5 w-5 text-gray-400" />
-            </div>
-            <select
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              value={selectedSupplier}
-              onChange={handleSupplierChange}
-            >
-              <option value="">Tous les fournisseurs</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier} value={supplier}>
-                  {supplier}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
       </div>
 
@@ -170,54 +188,11 @@ const Purchases = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Produit
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Quantité
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Prix unitaire
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Prix total
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Fournisseur
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Date d'achat
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  N° Facture
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix unitaire</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix total</th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -226,38 +201,16 @@ const Purchases = () => {
                 return (
                   <tr key={purchase.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.nomProduit}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {purchase.quantity} {produit?.unit}
-                      </div>
+                      <div className="text-sm text-gray-900">{purchase.quantity}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{purchase.unitPrice.toFixed(2)} €</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{purchase.totalPrice.toFixed(2)} €</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{purchase.supplier}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {new Date(purchase.purchaseDate).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {purchase.invoiceNumber ? (
-                          <div className="flex items-center">
-                            <FileText className="h-4 w-4 mr-1 text-gray-400" />
-                            {purchase.invoiceNumber}
-                          </div>
-                        ) : (
-                          "-"
-                        )}
-                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -272,7 +225,7 @@ const Purchases = () => {
               })}
               {filteredPurchases.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                     Aucun achat trouvé
                   </td>
                 </tr>
@@ -312,11 +265,15 @@ const Purchases = () => {
                             onChange={handleFormChange}
                           >
                             <option value="">Sélectionner un produit</option>
-                            {produits.map((produit) => (
-                              <option key={produit.id} value={produit.id}>
-                                {produit.name}
-                              </option>
-                            ))}
+                            {produits && produits.length > 0 ? (
+                              produits.map((produit: any) => (
+                                <option key={produit.id || produit.idProduit} value={produit.id || produit.idProduit}>
+                                  {produit.name || produit.nomProduit}
+                                </option>
+                              ))
+                            ) : (
+                              <option disabled>Aucun produit disponible</option>
+                            )}
                           </select>
                         </div>
                         <div>
@@ -335,8 +292,8 @@ const Purchases = () => {
                           />
                         </div>
                         <div>
-                          <label htmlFor="unitPrice" className="block text-sm font-medium text-gray-700">
-                            Prix unitaire (€) *
+                          {/* <label htmlFor="unitPrice" className="block text-sm font-medium text-gray-700">
+                            Prix total (€) *
                           </label>
                           <input
                             type="number"
@@ -348,34 +305,7 @@ const Purchases = () => {
                             className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             value={formData.unitPrice}
                             onChange={handleFormChange}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="supplier" className="block text-sm font-medium text-gray-700">
-                            Fournisseur *
-                          </label>
-                          <input
-                            type="text"
-                            name="supplier"
-                            id="supplier"
-                            required
-                            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            value={formData.supplier}
-                            onChange={handleFormChange}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="invoiceNumber" className="block text-sm font-medium text-gray-700">
-                            Numéro de facture
-                          </label>
-                          <input
-                            type="text"
-                            name="invoiceNumber"
-                            id="invoiceNumber"
-                            className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            value={formData.invoiceNumber}
-                            onChange={handleFormChange}
-                          />
+                          /> */}
                         </div>
                       </div>
                     </div>
@@ -423,13 +353,13 @@ const Purchases = () => {
                           <div>
                             <p className="text-sm font-medium text-gray-500">Produit</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {getProduitById(currentPurchase.produitId)?.name}
+                              {getProduitById(currentPurchase.produitId)?.nomProduit}
                             </p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Quantité</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {currentPurchase.quantity} {getProduitById(currentPurchase.produitId)?.unit}
+                              {currentPurchase.quantity} {getProduitById(currentPurchase.produitId)?.conditionnement}
                             </p>
                           </div>
                           <div>
@@ -439,20 +369,6 @@ const Purchases = () => {
                           <div>
                             <p className="text-sm font-medium text-gray-500">Prix total</p>
                             <p className="mt-1 text-sm text-gray-900">{currentPurchase.totalPrice.toFixed(2)} €</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Fournisseur</p>
-                            <p className="mt-1 text-sm text-gray-900">{currentPurchase.supplier}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Date d'achat</p>
-                            <p className="mt-1 text-sm text-gray-900">
-                              {new Date(currentPurchase.purchaseDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Numéro de facture</p>
-                            <p className="mt-1 text-sm text-gray-900">{currentPurchase.invoiceNumber || "-"}</p>
                           </div>
                         </div>
                       </div>
