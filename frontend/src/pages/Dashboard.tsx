@@ -15,21 +15,32 @@ import {
   Cell,
 } from "recharts"
 import { Package, AlertTriangle, ShoppingCart, CreditCard } from "lucide-react"
-import { getDashboardStats, getProduitById } from "../data/mockData"
+import { DashboardStats, getProduitById } from "../data/mockData"
 
 const Dashboard = () => {
-  const [stats, setStats] = useState(getDashboardStats())
+  const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setStats(getDashboardStats())
-      setLoading(false)
-    }, 500)
-
-    return () => clearTimeout(timer)
+    fetch("http://localhost:8081/api/dashboard")
+      .then((res) => {
+        if (!res.ok) throw new Error("Erreur lors de la récupération des stats du dashboard")
+        return res.json()
+      })
+      .then((data: DashboardStats) => {
+        setStats(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
   }, [])
+
+  if (loading || !stats) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
 
   const stockStatusData = [
     { name: "Optimal", value: stats.stockStatus.optimal, color: "#10b981" },
@@ -45,14 +56,6 @@ const Dashboard = () => {
     { name: "Mai", value: 2400 },
     { name: "Juin", value: 1800 },
   ]
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">
