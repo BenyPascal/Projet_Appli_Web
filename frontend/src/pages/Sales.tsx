@@ -4,11 +4,23 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { Plus, Search, Filter, Eye } from "lucide-react"
-import { sales, produits, type Sale, getProduitById } from "../data/mockData"
+import { type Produit as ProduitApi } from "../data/type"
 import toast from "react-hot-toast"
+
+// Define Sale type to match backend structure
+export type Sale = {
+  id: string
+  produitId: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+  saleDate: string
+  customer?: string
+}
 
 const Sales = () => {
   const [salesList, setSalesList] = useState<Sale[]>([])
+  const [produits, setProduits] = useState<ProduitApi[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter, setDateFilter] = useState("")
@@ -22,15 +34,62 @@ const Sales = () => {
     customer: "",
   })
 
+  // No mockData: fetch from backend only
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setSalesList(sales)
-      setLoading(false)
-    }, 500)
+    setLoading(true);
+    fetch("http://localhost:8081/api/ventes")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des ventes");
+        }
+        return response.json();
+      })
+      .then((data: any[]) => {
+        // Adapter le mapping selon la structure backend
+        const mapped = Array.isArray(data)
+          ? data.map((vente) => ({
+              id: vente.idVente?.toString() || "",
+              produitId: vente.produit?.idProduit?.toString() || "",
+              quantity: vente.quantite || 0,
+              unitPrice: vente.prixUnitaire || 0,
+              totalPrice: vente.prixTotal || 0,
+              saleDate: vente.dateVente || new Date().toISOString(),
+              customer: vente.client || undefined,
+            }))
+          : [];
+        setSalesList(mapped);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Erreur:", error);
+        toast.error("Impossible de charger les ventes");
+        setLoading(false);
+      });
+  }, []);
 
-    return () => clearTimeout(timer)
-  }, [])
+  // Fetch products from backend and robustly map to Produit type
+  useEffect(() => {
+    setLoading(true);
+    fetch("http://localhost:8081/api/produits")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des produits");
+        }
+        return response.json();
+      })
+      .then((data: ProduitApi[]) => {
+        setProduits(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Erreur:", error);
+        toast.error("Impossible de charger les produits");
+        setLoading(false);
+      });
+  }, []);
+
+  const getProduitById = (id: string) => produits.find((p) => p.idProduit?.toString() === id)
+
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
@@ -45,7 +104,7 @@ const Sales = () => {
     if (!produit) return false
 
     const matchesSearch =
-      produit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (sale.customer && sale.customer.toLowerCase().includes(searchTerm.toLowerCase()))
 
     let matchesDate = true
@@ -91,7 +150,7 @@ const Sales = () => {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
-          unitPrice: produit.price.toString(),
+          unitPrice: produit.prixVenteTtc?.toString() || "",
         }))
         return
       }
@@ -100,6 +159,7 @@ const Sales = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  // In handleAddSubmit, POST to backend and refresh list
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -114,21 +174,52 @@ const Sales = () => {
     const unitPrice = Number.parseFloat(formData.unitPrice)
     const totalPrice = quantity * unitPrice
 
-    // Create new sale
-    const newSale: Sale = {
-      id: (salesList.length + 1).toString(),
-      produitId: formData.produitId,
-      quantity,
-      unitPrice,
-      totalPrice,
-      saleDate: new Date().toISOString(),
-      customer: formData.customer || undefined,
+    // Prepare payload for backend
+    const payload = {
+      produit: { idProduit: Number(formData.produitId) },
+      quantite: quantity,
+      prixUnitaire: unitPrice,
+      prixTotal: totalPrice,
+      client: formData.customer || undefined,
+      dateVente: new Date().toISOString(),
     }
 
-    // Add to list
-    setSalesList([...salesList, newSale])
-    setShowAddModal(false)
-    toast.success("Vente ajoutée avec succès")
+    fetch("http://localhost:8081/api/ventes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de l'ajout de la vente");
+        }
+        return response.json();
+      })
+      .then(() => {
+        // Refresh sales list from backend
+        fetch("http://localhost:8081/api/ventes")
+          .then((response) => response.json())
+          .then((data: any[]) => {
+            const mapped = Array.isArray(data)
+              ? data.map((vente) => ({
+                  id: vente.idVente?.toString() || "",
+                  produitId: vente.produit?.idProduit?.toString() || "",
+                  quantity: vente.quantite || 0,
+                  unitPrice: vente.prixUnitaire || 0,
+                  totalPrice: vente.prixTotal || 0,
+                  saleDate: vente.dateVente || new Date().toISOString(),
+                  customer: vente.client || undefined,
+                }))
+              : [];
+            setSalesList(mapped);
+            setShowAddModal(false);
+            toast.success("Vente ajoutée avec succès");
+          });
+      })
+      .catch((error) => {
+        console.error("Erreur:", error);
+        toast.error("Erreur lors de l'ajout de la vente");
+      });
   }
 
   if (loading) {
@@ -220,12 +311,6 @@ const Sales = () => {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Client
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
                   Date de vente
                 </th>
                 <th
@@ -242,21 +327,28 @@ const Sales = () => {
                 return (
                   <tr key={sale.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.nomProduit}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {sale.quantity} {produit?.unit}
+                        {sale.quantity} 
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{sale.unitPrice.toFixed(2)} €</div>
+                      <div className="text-sm text-gray-900">
+                        {getProduitById(sale.produitId)?.prixVenteTtc?.toFixed(2) ?? "-"} €
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{sale.totalPrice.toFixed(2)} €</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{sale.customer || "-"}</div>
+                      <div className="text-sm text-gray-900">
+                        {(() => {
+                          const produit = getProduitById(sale.produitId);
+                          if (produit && produit.prixVenteTtc != null) {
+                            return (produit.prixVenteTtc * sale.quantity).toFixed(2) + " €";
+                          }
+                          return "-";
+                        })()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{new Date(sale.saleDate).toLocaleDateString()}</div>
@@ -271,7 +363,7 @@ const Sales = () => {
               })}
               {filteredSales.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
                     Aucune vente trouvée
                   </td>
                 </tr>
@@ -312,8 +404,8 @@ const Sales = () => {
                           >
                             <option value="">Sélectionner un produit</option>
                             {produits.map((produit) => (
-                              <option key={produit.id} value={produit.id}>
-                                {produit.name}
+                              <option key={produit.idProduit} value={produit.idProduit}>
+                                {produit.nomProduit}
                               </option>
                             ))}
                           </select>
@@ -407,30 +499,30 @@ const Sales = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm font-medium text-gray-500">Produit</p>
-                            <p className="mt-1 text-sm text-gray-900">{getProduitById(currentSale.produitId)?.name}</p>
+                            <p className="mt-1 text-sm text-gray-900">{getProduitById(currentSale.produitId)?.nomProduit}</p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Quantité</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {currentSale.quantity} {getProduitById(currentSale.produitId)?.unit}
+                              {currentSale.quantity}
                             </p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Prix unitaire</p>
-                            <p className="mt-1 text-sm text-gray-900">{currentSale.unitPrice.toFixed(2)} €</p>
+                            <p className="mt-1 text-sm text-gray-900">
+                              {getProduitById(currentSale.produitId)?.prixVenteTtc?.toFixed(2) ?? "-"} €
+                            </p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Prix total</p>
-                            <p className="mt-1 text-sm text-gray-900">{currentSale.totalPrice.toFixed(2)} €</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Client</p>
-                            <p className="mt-1 text-sm text-gray-900">{currentSale.customer || "-"}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">Date de vente</p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {new Date(currentSale.saleDate).toLocaleDateString()}
+                              {(() => {
+                                const produit = getProduitById(currentSale.produitId);
+                                if (produit && produit.prixVenteTtc != null) {
+                                  return (produit.prixVenteTtc * currentSale.quantity).toFixed(2) + " €";
+                                }
+                                return "-";
+                              })()}
                             </p>
                           </div>
                         </div>
