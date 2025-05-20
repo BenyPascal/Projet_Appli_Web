@@ -1,14 +1,25 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Plus, Search, Filter, Check, ShoppingCart, Trash2 } from "lucide-react"
-import { shoppingList, produits, type ShoppingListItem, getProduitById, stock } from "../data/mockData"
+import { type Produit as ProduitApi } from "../data/type"
 import toast from "react-hot-toast"
+
+export type ShoppingListItem = {
+  id: string
+  produitId: string
+  quantityNeeded: number
+  quantiteStock?: number
+  priority: "Haute" | "Moyenne" | "Basse"
+  status: "À acheter" | "En cours" | "Acheté"
+  createdAt: string
+  updatedAt: string
+}
 
 const ShoppingList = () => {
   const [shoppingItems, setShoppingItems] = useState<ShoppingListItem[]>([])
+  const [produits, setProduits] = useState<ProduitApi[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
@@ -20,14 +31,25 @@ const ShoppingList = () => {
     priority: "Moyenne",
   })
 
-  useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      setShoppingItems(shoppingList)
-      setLoading(false)
-    }, 500)
 
-    return () => clearTimeout(timer)
+
+  // Fetch products from backend
+  useEffect(() => {
+    fetch("http://localhost:8081/api/produits")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des produits")
+        }
+        return response.json()
+      })
+      .then((data: ProduitApi[]) => {
+        setProduits(data)
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Erreur:", error)
+        toast.error("Impossible de charger les produits")
+      })
   }, [])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,11 +64,15 @@ const ShoppingList = () => {
     setPriorityFilter(e.target.value)
   }
 
+  // Ajoute la fonction utilitaire getProduitById pour le mapping et l'affichage
+  const getProduitById = (id: string) => produits.find((p) => p.idProduit?.toString() === id)
+
+  // Update filteredItems to use produit.nomProduit for search
   const filteredItems = shoppingItems.filter((item) => {
     const produit = getProduitById(item.produitId)
     if (!produit) return false
 
-    const matchesSearch = produit.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "" || item.status === statusFilter
     const matchesPriority = priorityFilter === "" || item.priority === priorityFilter
 
@@ -93,7 +119,19 @@ const ShoppingList = () => {
     toast.success("Produit ajouté à la liste de courses")
   }
 
-  const handleUpdateStatus = (item: ShoppingListItem, newStatus: "À acheter" | "En cours" | "Acheté") => {
+  const handleUpdateStatus = async (item: ShoppingListItem, newStatus: "À acheter" | "En cours" | "Acheté") => {
+    // Si on marque comme 'Acheté', on envoie un POST vers /api/achats/ajouter
+    if (newStatus === "Acheté") {
+      try {
+        const res = await fetch(`http://localhost:8081/api/achats/ajouter?idProduit=${item.produitId}&quantiteAchat=${item.quantityNeeded}`, {
+          method: "POST"
+        })
+        if (!res.ok) throw new Error("Erreur lors de l'ajout de l'achat")
+        toast.success("Achat enregistré dans le stock !")
+      } catch (e) {
+        toast.error("Erreur lors de l'ajout de l'achat")
+      }
+    }
     const updatedItems = shoppingItems.map((i) => {
       if (i.id === item.id) {
         return {
@@ -115,38 +153,37 @@ const ShoppingList = () => {
     toast.success("Produit retiré de la liste de courses")
   }
 
-  const generateShoppingList = () => {
-    // Find produits with low stock
-    const lowStockItems = stock.filter((item) => item.currentQuantity < item.desiredQuantity * 0.7)
-
-    // Create shopping list items for low stock produits
-    const newItems: ShoppingListItem[] = lowStockItems
-      .map((stockItem, index) => {
-        // Check if item is already in shopping list
-        const existingItem = shoppingItems.find((item) => item.produitId === stockItem.produitId)
-        if (existingItem) return null
-
-        const quantityNeeded = stockItem.desiredQuantity - stockItem.currentQuantity
-
-        return {
-          id: (shoppingItems.length + index + 1).toString(),
-          produitId: stockItem.produitId,
-          quantityNeeded,
-          priority: quantityNeeded > stockItem.desiredQuantity * 0.5 ? "Haute" : "Moyenne",
-          status: "À acheter",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+  const handleGenerateShoppingList = () => {
+    setLoading(true)
+    fetch("http://localhost:8081/api/courses/generer", { method: "POST" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erreur lors de la génération de la liste de courses")
         }
+        return response.json()
       })
-      .filter(Boolean) as ShoppingListItem[]
-
-    if (newItems.length === 0) {
-      toast("Aucun produit à ajouter à la liste de courses")
-      return
-    }
-
-    setShoppingItems([...shoppingItems, ...newItems])
-    toast.success(`${newItems.length} produits ajoutés à la liste de courses`)
+      .then((data: any[]) => {
+        const mapped = Array.isArray(data)
+          ? data.map((course, idx) => ({
+              id: course.idListeCourse?.toString() || (idx + 1).toString(),
+              produitId: course.produit?.idProduit?.toString() || "",
+              quantityNeeded: course.quantiteNecessaire || 0,
+              quantiteStock: course.quantiteStock ?? 0,
+              priority: "Moyenne" as "Moyenne",
+              status: "À acheter" as "À acheter",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }))
+          : []
+        setShoppingItems(mapped)
+        setLoading(false)
+        toast.success("Liste de courses générée depuis le backend")
+      })
+      .catch((error) => {
+        console.error("Erreur:", error)
+        toast.error("Impossible de générer la liste de courses")
+        setLoading(false)
+      })
   }
 
   if (loading) {
@@ -163,7 +200,7 @@ const ShoppingList = () => {
         <h1 className="text-2xl font-bold text-gray-900">Liste de Courses</h1>
         <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <button
-            onClick={generateShoppingList}
+            onClick={handleGenerateShoppingList}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
@@ -267,6 +304,12 @@ const ShoppingList = () => {
                 </th>
                 <th
                   scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Stock actuel
+                </th>
+                <th
+                  scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   Actions
@@ -298,11 +341,11 @@ const ShoppingList = () => {
                 return (
                   <tr key={item.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{produit?.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{produit?.nomProduit}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {item.quantityNeeded} {produit?.unit}
+                        {item.quantityNeeded} 
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -322,6 +365,9 @@ const ShoppingList = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">{new Date(item.createdAt).toLocaleDateString()}</div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{item.quantiteStock !== undefined && item.quantiteStock !== null ? item.quantiteStock : '-'}</div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         {item.status !== "Acheté" && (
@@ -333,7 +379,8 @@ const ShoppingList = () => {
                             <Check className="h-5 w-5" />
                           </button>
                         )}
-                        {item.status === "À acheter" && (
+                        {/* Supprimé : bouton Marquer comme en cours */}
+                        {/* {item.status === "À acheter" && (
                           <button
                             onClick={() => handleUpdateStatus(item, "En cours")}
                             className="text-blue-600 hover:text-blue-900"
@@ -341,7 +388,7 @@ const ShoppingList = () => {
                           >
                             <ShoppingCart className="h-5 w-5" />
                           </button>
-                        )}
+                        )} */}
                         <button
                           onClick={() => handleDeleteItem(item)}
                           className="text-red-600 hover:text-red-900"
@@ -356,7 +403,7 @@ const ShoppingList = () => {
               })}
               {filteredItems.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
                     Aucun produit dans la liste de courses
                   </td>
                 </tr>
@@ -399,8 +446,8 @@ const ShoppingList = () => {
                           >
                             <option value="">Sélectionner un produit</option>
                             {produits.map((produit) => (
-                              <option key={produit.id} value={produit.id}>
-                                {produit.name}
+                              <option key={produit.idProduit} value={produit.idProduit}>
+                                {produit.nomProduit}
                               </option>
                             ))}
                           </select>
