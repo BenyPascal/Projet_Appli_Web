@@ -1,11 +1,11 @@
 export interface Produit {
     idProduit: number;
     nomProduit: string;
-    categorie: string;
+    categorieProduit: CategorieProduit;
     conditionnement: number;
     prixAchatHt?: number;
     tva?: number;
-    prixVenteTtc?: number;
+    prixVenteTtc: number;
     margeTotale?: number;
     quantiteVoulue?: number;
   }
@@ -23,3 +23,18 @@ export interface Produit {
     quantiteNecessaire: number;
     produit: Produit;
   }
+
+  export interface Facture {
+    id: number;
+    fileName: string;
+    fileUrl: string;
+    issueDate: string;
+    supplier?: string;
+    totalAmount?: number;
+    uploadedAt?: string;
+}
+
+export interface CategorieProduit {
+  idCategorie: number;
+  nom: string;
+}

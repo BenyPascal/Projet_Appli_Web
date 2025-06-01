@@ -12,14 +12,19 @@ import com.stockfoy.demo.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AchatService {
-    @Autowired private final AchatRepository achatRepository;
-    @Autowired private ProduitRepository produitRepository;
-    @Autowired private StockRepository stockRepository;
+    @Autowired
+    private final AchatRepository achatRepository;
+    @Autowired
+    private ProduitRepository produitRepository;
+    @Autowired
+    private StockRepository stockRepository;
 
     public AchatService(AchatRepository achatRepository) {
         this.achatRepository = achatRepository;
@@ -33,7 +38,7 @@ public class AchatService {
         Produit produit = produitRepository.findById(idProduit).orElse(null);
 
         Stock stock = stockRepository.findByProduit(produit);
-        
+
         if (stock == null) {
             stock = new Stock();
             stock.setProduit(produit);
@@ -49,11 +54,23 @@ public class AchatService {
         Achat achat = new Achat();
         achat.setProduit(produit);
         achat.setQuantite(quantiteAchat);
-        float prixUnitaire = produit.getPrixAchatHt()*(1+produit.getTva()/100)/produit.getConditionnement();
+        float prixUnitaire = produit.getPrixAchatHt() * (1 + produit.getTva() / 100) / produit.getConditionnement();
         achat.setPrixUnitaire(prixUnitaire);
         achat.setPrixTotal(prixUnitaire * quantiteAchat);
         achatRepository.save(achat);
 
         return achat;
+    }
+
+    public Float getTotalAchatsBetween(LocalDateTime start, LocalDateTime end) {
+        List<Achat> achats = achatRepository.findByDateAchatBetween(start, end);
+        return achats.stream()
+                .map(Achat::getPrixTotal)
+                .filter(Objects::nonNull)
+                .reduce(0f, Float::sum);
+    }
+
+    public List<Achat> findRecentPurchases(int limit) {
+        return achatRepository.findTopNByOrderByDateAchatDesc(limit);
     }
 }

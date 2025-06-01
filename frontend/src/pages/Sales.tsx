@@ -1,38 +1,38 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Plus, Search, Filter, Eye } from "lucide-react"
-import { type Produit as ProduitApi } from "../data/type"
-import toast from "react-hot-toast"
+import { useState, useEffect } from "react";
+import { Plus, Search, Filter, Eye } from "lucide-react";
+import { type Produit as ProduitApi } from "../data/type";
+import toast from "react-hot-toast";
 
 // Define Sale type to match backend structure
 export type Sale = {
-  id: string
-  produitId: string
-  quantity: number
-  unitPrice: number
-  totalPrice: number
-  saleDate: string
-  customer?: string
-}
+  id: string;
+  produitId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  saleDate: string;
+  customer?: string;
+};
 
 const Sales = () => {
-  const [salesList, setSalesList] = useState<Sale[]>([])
-  const [produits, setProduits] = useState<ProduitApi[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [dateFilter, setDateFilter] = useState("")
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [currentSale, setCurrentSale] = useState<Sale | null>(null)
+  const [salesList, setSalesList] = useState<Sale[]>([]);
+  const [produits, setProduits] = useState<ProduitApi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [currentSale, setCurrentSale] = useState<Sale | null>(null);
   const [formData, setFormData] = useState({
     produitId: "",
     quantity: "",
     unitPrice: "",
     customer: "",
-  })
+  });
 
   // No mockData: fetch from backend only
   useEffect(() => {
@@ -88,43 +88,44 @@ const Sales = () => {
       });
   }, []);
 
-  const getProduitById = (id: string) => produits.find((p) => p.idProduit?.toString() === id)
-
+  const getProduitById = (id: string) =>
+    produits.find((p) => p.idProduit?.toString() === id);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
-  }
+    setSearchTerm(e.target.value);
+  };
 
   const handleDateFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDateFilter(e.target.value)
-  }
+    setDateFilter(e.target.value);
+  };
 
   const filteredSales = salesList.filter((sale) => {
-    const produit = getProduitById(sale.produitId)
-    if (!produit) return false
+    const produit = getProduitById(sale.produitId);
+    if (!produit) return false;
 
     const matchesSearch =
       produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (sale.customer && sale.customer.toLowerCase().includes(searchTerm.toLowerCase()))
+      (sale.customer &&
+        sale.customer.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    let matchesDate = true
-    const saleDate = new Date(sale.saleDate)
-    const today = new Date()
+    let matchesDate = true;
+    const saleDate = new Date(sale.saleDate);
+    const today = new Date();
 
     if (dateFilter === "today") {
-      matchesDate = saleDate.toDateString() === today.toDateString()
+      matchesDate = saleDate.toDateString() === today.toDateString();
     } else if (dateFilter === "week") {
-      const weekAgo = new Date()
-      weekAgo.setDate(today.getDate() - 7)
-      matchesDate = saleDate >= weekAgo
+      const weekAgo = new Date();
+      weekAgo.setDate(today.getDate() - 7);
+      matchesDate = saleDate >= weekAgo;
     } else if (dateFilter === "month") {
-      const monthAgo = new Date()
-      monthAgo.setMonth(today.getMonth() - 1)
-      matchesDate = saleDate >= monthAgo
+      const monthAgo = new Date();
+      monthAgo.setMonth(today.getMonth() - 1);
+      matchesDate = saleDate >= monthAgo;
     }
 
-    return matchesSearch && matchesDate
-  })
+    return matchesSearch && matchesDate;
+  });
 
   const handleAddSale = () => {
     setFormData({
@@ -132,47 +133,50 @@ const Sales = () => {
       quantity: "",
       unitPrice: "",
       customer: "",
-    })
-    setShowAddModal(true)
-  }
+    });
+    setShowAddModal(true);
+  };
 
   const handleViewSale = (sale: Sale) => {
-    setCurrentSale(sale)
-    setShowViewModal(true)
-  }
+    setCurrentSale(sale);
+    setShowViewModal(true);
+  };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
 
     if (name === "produitId" && value) {
-      const produit = getProduitById(value)
+      const produit = getProduitById(value);
       if (produit) {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
-          unitPrice: produit.prixVenteTtc?.toString() || "",
-        }))
-        return
+          unitPrice:
+            (produit.prixVenteTtc / produit.conditionnement).toString() || "",
+        }));
+        return;
       }
     }
 
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   // In handleAddSubmit, POST to backend and refresh list
   const handleAddSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate form
     if (!formData.produitId || !formData.quantity || !formData.unitPrice) {
-      toast.error("Veuillez remplir tous les champs obligatoires")
-      return
+      toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
     }
 
     // Calculate total price
-    const quantity = Number.parseInt(formData.quantity)
-    const unitPrice = Number.parseFloat(formData.unitPrice)
-    const totalPrice = quantity * unitPrice
+    const quantity = Number.parseInt(formData.quantity);
+    const unitPrice = Number.parseFloat(formData.unitPrice);
+    const totalPrice = quantity * unitPrice;
 
     // Prepare payload for backend
     const payload = {
@@ -181,8 +185,8 @@ const Sales = () => {
       prixUnitaire: unitPrice,
       prixTotal: totalPrice,
       client: formData.customer || undefined,
-      dateVente: new Date().toISOString(),
-    }
+      dateVente: new Date().toISOString(), // <-- Ajoute la date ici
+    };
 
     fetch("http://localhost:8081/api/ventes", {
       method: "POST",
@@ -220,14 +224,14 @@ const Sales = () => {
         console.error("Erreur:", error);
         toast.error("Erreur lors de l'ajout de la vente");
       });
-  }
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -323,20 +327,22 @@ const Sales = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredSales.map((sale) => {
-                const produit = getProduitById(sale.produitId)
+                const produit = getProduitById(sale.produitId);
                 return (
                   <tr key={sale.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{produit?.nomProduit}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {sale.quantity} 
+                      <div className="text-sm font-medium text-gray-900">
+                        {produit?.nomProduit}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {getProduitById(sale.produitId)?.prixVenteTtc?.toFixed(2) ?? "-"} €
+                        {sale.quantity}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {sale.unitPrice?.toFixed(2) ?? "-"} €
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -344,26 +350,38 @@ const Sales = () => {
                         {(() => {
                           const produit = getProduitById(sale.produitId);
                           if (produit && produit.prixVenteTtc != null) {
-                            return (produit.prixVenteTtc * sale.quantity).toFixed(2) + " €";
+                            return (
+                              (produit.prixVenteTtc * sale.quantity).toFixed(
+                                2
+                              ) + " €"
+                            );
                           }
                           return "-";
                         })()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{new Date(sale.saleDate).toLocaleDateString()}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(sale.saleDate).toLocaleDateString()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleViewSale(sale)} className="text-blue-600 hover:text-blue-900">
+                      <button
+                        onClick={() => handleViewSale(sale)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
                         <Eye className="h-5 w-5" />
                       </button>
                     </td>
                   </tr>
-                )
+                );
               })}
               {filteredSales.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={6}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     Aucune vente trouvée
                   </td>
                 </tr>
@@ -377,10 +395,16 @@ const Sales = () => {
       {showAddModal && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
@@ -388,10 +412,15 @@ const Sales = () => {
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">Ajouter une vente</h3>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        Ajouter une vente
+                      </h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="produitId" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="produitId"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Produit *
                           </label>
                           <select
@@ -404,14 +433,20 @@ const Sales = () => {
                           >
                             <option value="">Sélectionner un produit</option>
                             {produits.map((produit) => (
-                              <option key={produit.idProduit} value={produit.idProduit}>
+                              <option
+                                key={produit.idProduit}
+                                value={produit.idProduit}
+                              >
                                 {produit.nomProduit}
                               </option>
                             ))}
                           </select>
                         </div>
                         <div>
-                          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="quantity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Quantité *
                           </label>
                           <input
@@ -426,7 +461,10 @@ const Sales = () => {
                           />
                         </div>
                         <div>
-                          <label htmlFor="unitPrice" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="unitPrice"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Prix unitaire (€) *
                           </label>
                           <input
@@ -442,7 +480,10 @@ const Sales = () => {
                           />
                         </div>
                         <div>
-                          <label htmlFor="customer" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="customer"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Client
                           </label>
                           <input
@@ -483,43 +524,74 @@ const Sales = () => {
       {showViewModal && currentSale && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Détails de la vente</h3>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Détails de la vente
+                    </h3>
                     <div className="mt-4 space-y-4">
                       <div className="bg-gray-50 p-4 rounded-md">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Produit</p>
-                            <p className="mt-1 text-sm text-gray-900">{getProduitById(currentSale.produitId)?.nomProduit}</p>
+                            <p className="text-sm font-medium text-gray-500">
+                              Produit
+                            </p>
+                            <p className="mt-1 text-sm text-gray-900">
+                              {
+                                getProduitById(currentSale.produitId)
+                                  ?.nomProduit
+                              }
+                            </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Quantité</p>
+                            <p className="text-sm font-medium text-gray-500">
+                              Quantité
+                            </p>
                             <p className="mt-1 text-sm text-gray-900">
                               {currentSale.quantity}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Prix unitaire</p>
+                            <p className="text-sm font-medium text-gray-500">
+                              Prix unitaire
+                            </p>
                             <p className="mt-1 text-sm text-gray-900">
-                              {getProduitById(currentSale.produitId)?.prixVenteTtc?.toFixed(2) ?? "-"} €
+                              {getProduitById(
+                                currentSale.produitId
+                              )?.prixVenteTtc?.toFixed(2) ?? "-"}{" "}
+                              €
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Prix total</p>
+                            <p className="text-sm font-medium text-gray-500">
+                              Prix total
+                            </p>
                             <p className="mt-1 text-sm text-gray-900">
                               {(() => {
-                                const produit = getProduitById(currentSale.produitId);
+                                const produit = getProduitById(
+                                  currentSale.produitId
+                                );
                                 if (produit && produit.prixVenteTtc != null) {
-                                  return (produit.prixVenteTtc * currentSale.quantity).toFixed(2) + " €";
+                                  return (
+                                    (
+                                      produit.prixVenteTtc *
+                                      currentSale.quantity
+                                    ).toFixed(2) + " €"
+                                  );
                                 }
                                 return "-";
                               })()}
@@ -545,8 +617,7 @@ const Sales = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Sales
-
+export default Sales;

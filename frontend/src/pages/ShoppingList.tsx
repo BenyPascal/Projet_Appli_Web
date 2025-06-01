@@ -1,105 +1,141 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { Plus, Search, Filter, Check, ShoppingCart, Trash2 } from "lucide-react"
-import { type Produit as ProduitApi } from "../data/type"
-import toast from "react-hot-toast"
+import type React from "react";
+import { useState, useEffect } from "react";
+import {
+  Plus,
+  Search,
+  Filter,
+  Check,
+  ShoppingCart,
+  Trash2,
+} from "lucide-react";
+import { type Produit as ProduitApi } from "../data/type";
+import toast from "react-hot-toast";
 
 export type ShoppingListItem = {
-  id: string
-  produitId: string
-  quantityNeeded: number
-  quantiteStock?: number
-  priority: "Haute" | "Moyenne" | "Basse"
-  status: "À acheter" | "En cours" | "Acheté"
-  createdAt: string
-  updatedAt: string
-}
+  id: string;
+  produitId: string;
+  quantityNeeded: number;
+  quantiteStock?: number;
+  priority: "Haute" | "Moyenne" | "Basse";
+  status: "À acheter" | "En cours" | "Acheté";
+  createdAt: string;
+  updatedAt: string;
+};
+
+const SHOPPING_LIST_STORAGE_KEY = "shoppingListData";
 
 const ShoppingList = () => {
-  const [shoppingItems, setShoppingItems] = useState<ShoppingListItem[]>([])
-  const [produits, setProduits] = useState<ProduitApi[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
-  const [priorityFilter, setPriorityFilter] = useState("")
-  const [showAddModal, setShowAddModal] = useState(false)
+  const [shoppingItems, setShoppingItems] = useState<ShoppingListItem[]>([]);
+  const [produits, setProduits] = useState<ProduitApi[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     produitId: "",
     quantityNeeded: "",
     priority: "Moyenne",
-  })
-
-
+  });
 
   // Fetch products from backend
   useEffect(() => {
     fetch("http://localhost:8081/api/produits")
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des produits")
+          throw new Error("Erreur lors de la récupération des produits");
         }
-        return response.json()
+        return response.json();
       })
       .then((data: ProduitApi[]) => {
-        setProduits(data)
-        setLoading(false)
+        setProduits(data);
+        setLoading(false);
       })
       .catch((error) => {
-        console.error("Erreur:", error)
-        toast.error("Impossible de charger les produits")
-      })
-  }, [])
+        console.error("Erreur:", error);
+        toast.error("Impossible de charger les produits");
+      });
+  }, []);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(SHOPPING_LIST_STORAGE_KEY);
+    if (stored) {
+      setShoppingItems(JSON.parse(stored));
+      setLoading(false);
+    }
+  }, []);
+
+  // Save to localStorage on sh oppingItems change
+  useEffect(() => {
+    if (!loading) {
+      localStorage.setItem(
+        SHOPPING_LIST_STORAGE_KEY,
+        JSON.stringify(shoppingItems)
+      );
+    }
+  }, [shoppingItems, loading]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
-  }
+    setSearchTerm(e.target.value);
+  };
 
-  const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStatusFilter(e.target.value)
-  }
+  const handleStatusFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setStatusFilter(e.target.value);
+  };
 
-  const handlePriorityFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPriorityFilter(e.target.value)
-  }
+  const handlePriorityFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setPriorityFilter(e.target.value);
+  };
 
   // Ajoute la fonction utilitaire getProduitById pour le mapping et l'affichage
-  const getProduitById = (id: string) => produits.find((p) => p.idProduit?.toString() === id)
+  const getProduitById = (id: string) =>
+    produits.find((p) => p.idProduit?.toString() === id);
 
   // Update filteredItems to use produit.nomProduit for search
   const filteredItems = shoppingItems.filter((item) => {
-    const produit = getProduitById(item.produitId)
-    if (!produit) return false
+    const produit = getProduitById(item.produitId);
+    if (!produit) return false;
 
-    const matchesSearch = produit.nomProduit.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "" || item.status === statusFilter
-    const matchesPriority = priorityFilter === "" || item.priority === priorityFilter
+    const matchesSearch = produit.nomProduit
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "" || item.status === statusFilter;
+    const matchesPriority =
+      priorityFilter === "" || item.priority === priorityFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority
-  })
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
 
   const handleAddItem = () => {
     setFormData({
       produitId: "",
       quantityNeeded: "",
       priority: "Moyenne",
-    })
-    setShowAddModal(true)
-  }
+    });
+    setShowAddModal(true);
+  };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAddSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate form
     if (!formData.produitId || !formData.quantityNeeded) {
-      toast.error("Veuillez remplir tous les champs obligatoires")
-      return
+      toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
     }
 
     // Create new shopping list item
@@ -111,26 +147,37 @@ const ShoppingList = () => {
       status: "À acheter",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    }
+    };
 
     // Add to list
-    setShoppingItems([...shoppingItems, newItem])
-    setShowAddModal(false)
-    toast.success("Produit ajouté à la liste de courses")
-  }
+    setShoppingItems([...shoppingItems, newItem]);
+    setShowAddModal(false);
+    toast.success("Produit ajouté à la liste de courses");
+  };
 
-  const handleUpdateStatus = async (item: ShoppingListItem, newStatus: "À acheter" | "En cours" | "Acheté") => {
+  const handleUpdateStatus = async (
+    item: ShoppingListItem,
+    newStatus: "À acheter" | "En cours" | "Acheté"
+  ) => {
     // Si on marque comme 'Acheté', on envoie un POST vers /api/achats/ajouter
     if (newStatus === "Acheté") {
       try {
-        const res = await fetch(`http://localhost:8081/api/achats/ajouter?idProduit=${item.produitId}&quantiteAchat=${item.quantityNeeded}`, {
-          method: "POST"
-        })
-        if (!res.ok) throw new Error("Erreur lors de l'ajout de l'achat")
-        toast.success("Achat enregistré dans le stock !")
+        const res = await fetch(
+          `http://localhost:8081/api/achats/ajouter?idProduit=${item.produitId}&quantiteAchat=${item.quantityNeeded}`,
+          {
+            method: "POST",
+          }
+        );
+        if (!res.ok) throw new Error("Erreur lors de l'ajout de l'achat");
+        toast.success("Achat enregistré dans le stock !");
       } catch (e) {
-        toast.error("Erreur lors de l'ajout de l'achat")
+        toast.error("Erreur lors de l'ajout de l'achat");
       }
+      // Supprimer l'item de la liste après achat
+      const updatedItems = shoppingItems.filter((i) => i.id !== item.id);
+      setShoppingItems(updatedItems);
+      toast.success("Produit retiré de la liste après achat");
+      return;
     }
     const updatedItems = shoppingItems.map((i) => {
       if (i.id === item.id) {
@@ -138,29 +185,31 @@ const ShoppingList = () => {
           ...i,
           status: newStatus,
           updatedAt: new Date().toISOString(),
-        }
+        };
       }
-      return i
-    })
+      return i;
+    });
 
-    setShoppingItems(updatedItems)
-    toast.success(`Statut mis à jour: ${newStatus}`)
-  }
+    setShoppingItems(updatedItems);
+    toast.success(`Statut mis à jour: ${newStatus}`);
+  };
 
   const handleDeleteItem = (item: ShoppingListItem) => {
-    const updatedItems = shoppingItems.filter((i) => i.id !== item.id)
-    setShoppingItems(updatedItems)
-    toast.success("Produit retiré de la liste de courses")
-  }
+    const updatedItems = shoppingItems.filter((i) => i.id !== item.id);
+    setShoppingItems(updatedItems);
+    toast.success("Produit retiré de la liste de courses");
+  };
 
   const handleGenerateShoppingList = () => {
-    setLoading(true)
+    setLoading(true);
     fetch("http://localhost:8081/api/courses/generer", { method: "POST" })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Erreur lors de la génération de la liste de courses")
+          throw new Error(
+            "Erreur lors de la génération de la liste de courses"
+          );
         }
-        return response.json()
+        return response.json();
       })
       .then((data: any[]) => {
         const mapped = Array.isArray(data)
@@ -174,24 +223,24 @@ const ShoppingList = () => {
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             }))
-          : []
-        setShoppingItems(mapped)
-        setLoading(false)
-        toast.success("Liste de courses générée depuis le backend")
+          : [];
+        setShoppingItems(mapped);
+        setLoading(false);
+        toast.success("Liste de courses générée depuis le backend");
       })
       .catch((error) => {
-        console.error("Erreur:", error)
-        toast.error("Impossible de générer la liste de courses")
-        setLoading(false)
-      })
-  }
+        console.error("Erreur:", error);
+        toast.error("Impossible de générer la liste de courses");
+        setLoading(false);
+      });
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -318,34 +367,36 @@ const ShoppingList = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredItems.map((item) => {
-                const produit = getProduitById(item.produitId)
+                const produit = getProduitById(item.produitId);
 
-                let priorityColor = ""
+                let priorityColor = "";
                 if (item.priority === "Haute") {
-                  priorityColor = "bg-red-100 text-red-800"
+                  priorityColor = "bg-red-100 text-red-800";
                 } else if (item.priority === "Moyenne") {
-                  priorityColor = "bg-yellow-100 text-yellow-800"
+                  priorityColor = "bg-yellow-100 text-yellow-800";
                 } else {
-                  priorityColor = "bg-green-100 text-green-800"
+                  priorityColor = "bg-green-100 text-green-800";
                 }
 
-                let statusColor = ""
+                let statusColor = "";
                 if (item.status === "À acheter") {
-                  statusColor = "bg-gray-100 text-gray-800"
+                  statusColor = "bg-gray-100 text-gray-800";
                 } else if (item.status === "En cours") {
-                  statusColor = "bg-blue-100 text-blue-800"
+                  statusColor = "bg-blue-100 text-blue-800";
                 } else {
-                  statusColor = "bg-green-100 text-green-800"
+                  statusColor = "bg-green-100 text-green-800";
                 }
 
                 return (
                   <tr key={item.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{produit?.nomProduit}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {produit?.nomProduit}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {item.quantityNeeded} 
+                        {item.quantityNeeded}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -363,10 +414,17 @@ const ShoppingList = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{new Date(item.createdAt).toLocaleDateString()}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{item.quantiteStock !== undefined && item.quantiteStock !== null ? item.quantiteStock : '-'}</div>
+                      <div className="text-sm text-gray-900">
+                        {item.quantiteStock !== undefined &&
+                        item.quantiteStock !== null
+                          ? item.quantiteStock
+                          : "-"}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
@@ -399,11 +457,14 @@ const ShoppingList = () => {
                       </div>
                     </td>
                   </tr>
-                )
+                );
               })}
               {filteredItems.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     Aucun produit dans la liste de courses
                   </td>
                 </tr>
@@ -417,10 +478,16 @@ const ShoppingList = () => {
       {showAddModal && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div
+              className="fixed inset-0 transition-opacity"
+              aria-hidden="true"
+            >
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
@@ -433,7 +500,10 @@ const ShoppingList = () => {
                       </h3>
                       <div className="mt-4 space-y-4">
                         <div>
-                          <label htmlFor="produitId" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="produitId"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Produit *
                           </label>
                           <select
@@ -446,14 +516,20 @@ const ShoppingList = () => {
                           >
                             <option value="">Sélectionner un produit</option>
                             {produits.map((produit) => (
-                              <option key={produit.idProduit} value={produit.idProduit}>
+                              <option
+                                key={produit.idProduit}
+                                value={produit.idProduit}
+                              >
                                 {produit.nomProduit}
                               </option>
                             ))}
                           </select>
                         </div>
                         <div>
-                          <label htmlFor="quantityNeeded" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="quantityNeeded"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Quantité nécessaire *
                           </label>
                           <input
@@ -468,7 +544,10 @@ const ShoppingList = () => {
                           />
                         </div>
                         <div>
-                          <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                          <label
+                            htmlFor="priority"
+                            className="block text-sm font-medium text-gray-700"
+                          >
                             Priorité
                           </label>
                           <select
@@ -508,8 +587,7 @@ const ShoppingList = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ShoppingList
-
+export default ShoppingList;

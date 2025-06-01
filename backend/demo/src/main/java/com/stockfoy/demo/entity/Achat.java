@@ -1,14 +1,13 @@
 package com.stockfoy.demo.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-
 
 @Entity
 @Table(name = "Achats")
 public class Achat {
-    
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,25 +20,26 @@ public class Achat {
     private Integer quantite;
     private Float prixUnitaire;
     private Float prixTotal;
+    private LocalDateTime dateAchat = LocalDateTime.now();
 
-    public Integer getIdAchat() { 
-        return idAchat; 
+    public Integer getIdAchat() {
+        return idAchat;
     }
 
-    public void setIdAchat(Integer idAchat) { 
-        this.idAchat = idAchat; 
+    public void setIdAchat(Integer idAchat) {
+        this.idAchat = idAchat;
     }
 
-    public Produit getProduit() { 
-        return produit; 
+    public Produit getProduit() {
+        return produit;
     }
 
-    public void setProduit(Produit produit) { 
-        this.produit = produit; 
+    public void setProduit(Produit produit) {
+        this.produit = produit;
     }
 
-    public Integer getQuantite() { 
-        return quantite; 
+    public Integer getQuantite() {
+        return quantite;
     }
 
     public void setQuantite(Integer quantite) {
@@ -47,19 +47,27 @@ public class Achat {
     }
 
     public Float getPrixUnitaire() {
-        return prixUnitaire; 
+        return prixUnitaire;
     }
 
     public void setPrixUnitaire(Float prixUnitaire) {
         this.prixUnitaire = prixUnitaire;
     }
 
-    public Float getPrixTotal() { 
-        return prixTotal; 
+    public Float getPrixTotal() {
+        return prixTotal;
     }
 
-    public void setPrixTotal(Float prixTotal) { 
-        this.prixTotal = prixTotal; 
+    public void setPrixTotal(Float prixTotal) {
+        this.prixTotal = prixTotal;
+    }
+
+    public LocalDateTime getDateAchat() {
+        return dateAchat;
+    }
+
+    public void setDateAchat(LocalDateTime dateAchat) {
+        this.dateAchat = dateAchat;
     }
 
 }

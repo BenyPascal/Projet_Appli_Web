@@ -15,8 +15,8 @@ import java.util.Optional;
 @Service
 public class StockService {
     private final StockRepository stockRepository;
-    @Autowired private VenteRepository venteRepository;
-
+    @Autowired
+    private VenteRepository venteRepository;
 
     public StockService(StockRepository stockRepository) {
         this.stockRepository = stockRepository;
@@ -46,6 +46,7 @@ public class StockService {
                 Vente vente = new Vente();
                 vente.setProduit(stock.getProduit());
                 vente.setQuantite(quantiteVendue);
+                vente.setDateVente(java.time.LocalDateTime.now());
                 venteRepository.save(vente);
             }
 

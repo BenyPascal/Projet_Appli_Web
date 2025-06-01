@@ -1,5 +1,7 @@
 package com.stockfoy.demo.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +17,9 @@ public class Vente {
     private Produit produit;
 
     private Integer quantite;
+    private Float prixTotal;
+
+    private LocalDateTime dateVente = LocalDateTime.now();
 
     public Integer getIdVente() {
         return idVente;
@@ -40,4 +45,23 @@ public class Vente {
         this.quantite = quantite;
     }
 
+    public LocalDateTime getDateVente() {
+        return dateVente;
+    }
+
+    public void setDateVente(LocalDateTime dateVente) {
+        this.dateVente = dateVente;
+    }
+
+    public Float getPrixUnitaire() {
+        return (produit.getPrixVenteTtc() / produit.getConditionnement());
+    }
+
+    public Float getPrixTotal() {
+        return prixTotal;
+    }
+
+    public void setPrixTotal(Float prixTotal) {
+        this.prixTotal = prixTotal;
+    }
 }

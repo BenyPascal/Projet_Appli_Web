@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Search, Filter } from "lucide-react";
 import toast from "react-hot-toast";
 import CreateProduit from "@/components/CreateProduit";
+import CreateCategorieProduit from "@/components/CreateCategorieProduit"; // Ajoute cet import en haut
 import { Produit } from "../data/type";
 
 const categories = ["Sirop", "Boisson", "Autre"];
@@ -11,6 +12,7 @@ export default function Produits() {
   const [produitsList, setProduitsList] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // État pour la fenêtre modale
+  const [isCategorieModalOpen, setIsCategorieModalOpen] = useState(false); // État pour la fenêtre modale catégorie
   const modalRef = useRef<HTMLDivElement>(null); // Référence pour la fenêtre modale
 
   const addProduit = (newProduit: Produit) => {
@@ -70,7 +72,7 @@ export default function Produits() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesCategory =
-      !selectedCategory || produit.categorie === selectedCategory;
+      !selectedCategory || produit.categorieProduit.nom === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -85,13 +87,23 @@ export default function Produits() {
   return (
     <div className="space-y-6 p-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Gestion des Produits</h1>
-        <button
-          onClick={() => setIsModalOpen(true)} // Ouvre la fenêtre modale
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Ajouter un produit
-        </button>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Gestion des Produits
+        </h1>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsCategorieModalOpen(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Ajouter une catégorie
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)} // Ouvre la fenêtre modale
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Ajouter un produit
+          </button>
+        </div>
       </div>
 
       {/* Filtres */}
@@ -165,7 +177,9 @@ export default function Produits() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{produit.categorie}</div>
+                    <div className="text-sm text-gray-500">
+                      {produit.categorieProduit?.nom}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
@@ -178,7 +192,9 @@ export default function Produits() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{produit.tva || "N/A"}</div>
+                    <div className="text-sm text-gray-500">
+                      {produit.tva || "N/A"}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -197,7 +213,7 @@ export default function Produits() {
         </div>
       </div>
 
-      {/* Fenêtre modale */}
+      {/* Fenêtre modale pour produit */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div
@@ -215,6 +231,23 @@ export default function Produits() {
                 addProduit(produit);
                 setIsModalOpen(false); // Ferme la fenêtre après création
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Fenêtre modale pour catégorie */}
+      {isCategorieModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              onClick={() => setIsCategorieModalOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+            <CreateCategorieProduit
+              onCategorieCreated={() => setIsCategorieModalOpen(false)}
             />
           </div>
         </div>

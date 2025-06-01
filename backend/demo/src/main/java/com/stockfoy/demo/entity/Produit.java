@@ -2,18 +2,19 @@ package com.stockfoy.demo.entity;
 
 import jakarta.persistence.*;
 
-
 @Entity
 @Table(name = "Produits")
 public class Produit {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idProduit;
 
     private String nomProduit;
 
-    private String categorie;
+    @ManyToOne
+    @JoinColumn(name = "idCategorie")
+    private CategorieProduit categorieProduit;
 
     private Float conditionnement;
 
@@ -27,78 +28,79 @@ public class Produit {
 
     private Integer quantite_voulue;
 
-    public Produit(){
+    public Produit() {
     }
 
-    public Integer getidProduit() { 
-        return idProduit; 
+    public Integer getidProduit() {
+        return idProduit;
     }
 
-    public void setidProduit(Integer idProduit) { 
-        this.idProduit = idProduit; 
+    public void setidProduit(Integer idProduit) {
+        this.idProduit = idProduit;
     }
 
-    public String getNomProduit() { 
-        return nomProduit; 
+    public String getNomProduit() {
+        return nomProduit;
     }
 
-    public void setNomProduit(String nomProduit) { 
-        this.nomProduit = nomProduit; 
-    }
-    
-    public String getCategorie() { 
-        return categorie; 
+    public void setNomProduit(String nomProduit) {
+        this.nomProduit = nomProduit;
     }
 
-    public void setCategorie(String categorie) { 
-        this.categorie = categorie; 
-    }
-    
-    public Float getConditionnement() { 
-        return conditionnement; 
+    public CategorieProduit getCategorieProduit() {
+        return categorieProduit;
     }
 
-    public void setConditionnement(Float conditionnement) { 
-        this.conditionnement = conditionnement; 
+    public void setCategorieProduit(CategorieProduit categorieProduit) {
+        this.categorieProduit = categorieProduit;
     }
 
-    public Float getPrixAchatHt() { 
-        return prix_HT; 
+    public Float getConditionnement() {
+        return conditionnement;
     }
 
-    public void setPrixAchatHt(Float prixAchatHt) { 
-        this.prix_HT = prixAchatHt; 
+    public void setConditionnement(Float conditionnement) {
+        this.conditionnement = conditionnement;
     }
 
-    public Float getTva() { 
-        return tva; 
+    public Float getPrixAchatHt() {
+        return prix_HT;
     }
 
-    public void setTva(Float tva) { 
-        this.tva = tva; 
+    public void setPrixAchatHt(Float prixAchatHt) {
+        this.prix_HT = prixAchatHt;
     }
 
-    public Float getPrixVenteTtc() { 
-        return prix_vente_TTC; 
+    public Float getTva() {
+        return tva;
     }
 
-    public void setPrixVenteTtc(Float prix_vente_TTC) { 
-        this.prix_vente_TTC = prix_vente_TTC; 
+    public void setTva(Float tva) {
+        this.tva = tva;
     }
 
-    public Float getMargeTotale() { 
-        return marge_totale; 
+    public Float getPrixVenteTtc() {
+        return prix_vente_TTC;
     }
 
-    public void setMargeTotale(Float marge_totale) { 
-        this.marge_totale = marge_totale; 
+    public void setPrixVenteTtc(Float prix_vente_TTC) {
+        this.prix_vente_TTC = prix_vente_TTC;
     }
 
-    public Integer getQuantiteVoulue() { 
-        return quantite_voulue; 
+    public Float getMargeTotale() {
+        return marge_totale;
     }
 
-    public void setQuantiteVoulue(Integer quantite_voulue) { 
-        this.quantite_voulue = quantite_voulue; 
+    public void setMargeTotale(Float marge_totale) {
+        this.marge_totale = marge_totale;
     }
+
+    public Integer getQuantiteVoulue() {
+        return quantite_voulue;
+    }
+
+    public void setQuantiteVoulue(Integer quantite_voulue) {
+        this.quantite_voulue = quantite_voulue;
+    }
+
 }

@@ -14,7 +14,7 @@ export default function Inventory({ stocks, onUpdateStock }: InventoryProps) {
 
   // Trier les stocks par catégorie
   const sortedStocks = [...stocks].sort((a, b) =>
-    a.produit.categorie.localeCompare(b.produit.categorie)
+    a.produit.categorieProduit.nom.localeCompare(b.produit.categorieProduit.nom)
   );
 
   const currentStock = sortedStocks[currentIndex];
@@ -52,10 +52,14 @@ export default function Inventory({ stocks, onUpdateStock }: InventoryProps) {
       <h2 className="text-xl font-bold mb-4">Inventaire</h2>
       <div className="mb-4">
         <p className="text-sm text-gray-500">
-          Catégorie : <span className="font-medium">{currentStock.produit.categorie}</span>
+          Catégorie :{" "}
+          <span className="font-medium">
+            {currentStock.produit.categorieProduit.nom}
+          </span>
         </p>
         <p className="text-sm text-gray-500">
-          Produit : <span className="font-medium">{currentStock.produit.nomProduit}</span>
+          Produit :{" "}
+          <span className="font-medium">{currentStock.produit.nomProduit}</span>
         </p>
         <p className="text-sm text-gray-500">
           Quantité actuelle :{" "}
@@ -63,7 +67,10 @@ export default function Inventory({ stocks, onUpdateStock }: InventoryProps) {
         </p>
       </div>
       <div className="mb-4">
-        <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="quantity"
+          className="block text-sm font-medium text-gray-700"
+        >
           Nouvelle quantité
         </label>
         <input
