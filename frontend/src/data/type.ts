@@ -33,3 +33,11 @@ export interface Produit {
     totalAmount?: number;
     uploadedAt?: string;
 }
+
+export interface HistoriquePrix {
+  idHistoriquePrix: number;
+  produit: Produit;
+  prix: number;
+  dateDebut: string;
+  dateFin?: string;
+}

@@ -12,6 +12,8 @@ export default function Produits() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // État pour la fenêtre modale
   const [isCategorieModalOpen, setIsCategorieModalOpen] = useState(false); // État pour la fenêtre modale catégorie
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState<Produit | null>(null);
   const modalRef = useRef<HTMLDivElement>(null); // Référence pour la fenêtre modale
 
   const addProduit = (newProduit: Produit) => {
@@ -66,6 +68,38 @@ export default function Produits() {
     };
   }, [isModalOpen]);
 
+  const handleEditProduit = (produit: Produit) => {
+    setEditForm(produit);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editForm) return;
+    const { name, value } = e.target;
+    setEditForm({ ...editForm, [name]: value });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editForm) return;
+    const response = await fetch(
+      `http://localhost:8081/api/produits/${editForm.idProduit}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      }
+    );
+    if (response.ok) {
+      toast.success("Produit modifié !");
+      setIsEditModalOpen(false);
+      // Mets à jour la liste locale si besoin
+      // ... (rafraîchis la liste ou modifie localement)
+    } else {
+      toast.error("Erreur lors de la modification");
+    }
+  };
+
   const filteredProduits = produitsList.filter((produit) => {
     const matchesSearch = produit.nomProduit
       .toLowerCase()
@@ -90,12 +124,6 @@ export default function Produits() {
           Gestion des Produits
         </h1>
         <div className="flex gap-2">
-          <button
-            onClick={() => setIsCategorieModalOpen(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Ajouter une catégorie
-          </button>
           <button
             onClick={() => setIsModalOpen(true)} // Ouvre la fenêtre modale
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -165,6 +193,9 @@ export default function Produits() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Référence
                 </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -195,12 +226,20 @@ export default function Produits() {
                       {produit.tva || "N/A"}
                     </div>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <button
+                      className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                      onClick={() => handleEditProduit(produit)}
+                    >
+                      Modifier
+                    </button>
+                  </td>
                 </tr>
               ))}
               {filteredProduits.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
                     Aucun produit trouvé
@@ -212,25 +251,48 @@ export default function Produits() {
         </div>
       </div>
 
-      {/* Fenêtre modale pour produit */}
-      {isModalOpen && (
+      {/* Modale de modification */}
+      {isEditModalOpen && editForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div
-            ref={modalRef} // Référence pour détecter les clics à l'extérieur
-            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative"
-          >
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button
-              onClick={() => setIsModalOpen(false)} // Ferme la fenêtre modale
+              onClick={() => setIsEditModalOpen(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
             >
               ✕
             </button>
-            <CreateProduit
-              onProduitCreated={(produit) => {
-                addProduit(produit);
-                setIsModalOpen(false); // Ferme la fenêtre après création
-              }}
-            />
+            <h2 className="text-lg font-bold mb-4">Modifier le produit</h2>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block mb-1">Nom du produit</label>
+                <input
+                  type="text"
+                  name="nomProduit"
+                  value={editForm.nomProduit}
+                  onChange={handleEditChange}
+                  className="border p-1 w-full"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Prix Vente TTC</label>
+                <input
+                  type="number"
+                  name="prixVenteTtc"
+                  value={editForm.prixVenteTtc}
+                  onChange={handleEditChange}
+                  className="border p-1 w-full"
+                  required
+                />
+              </div>
+              {/* Ajoute d'autres champs si besoin */}
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Enregistrer
+              </button>
+            </form>
           </div>
         </div>
       )}
