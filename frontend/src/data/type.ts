@@ -1,7 +1,7 @@
 export interface Produit {
     idProduit: number;
     nomProduit: string;
-    categorieProduit: CategorieProduit;
+    categorie: String;
     conditionnement: number;
     prixAchatHt?: number;
     tva?: number;
@@ -32,9 +32,4 @@ export interface Produit {
     supplier?: string;
     totalAmount?: number;
     uploadedAt?: string;
-}
-
-export interface CategorieProduit {
-  idCategorie: number;
-  nom: string;
 }

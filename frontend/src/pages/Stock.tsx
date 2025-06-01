@@ -18,17 +18,20 @@ export default function Stocks() {
     // Fetch stocks
     fetch("http://localhost:8081/api/stocks")
       .then((res) => {
-        if (!res.ok) throw new Error("Erreur lors de la récupération des stocks");
+        if (!res.ok)
+          throw new Error("Erreur lors de la récupération des stocks");
         return res.json();
       })
       .then((data: Stock[]) => {
         console.log("Données des stocks :", data); // Log pour vérifier les données
-        
+
         // Trier les stocks par catégorie de produit
-        const sortedData = [...data].sort((a, b) => 
-          a.produit.categorie.localeCompare(b.produit.categorie)
+        const sortedData = [...data].sort((a, b) =>
+          a.produit.categorie
+            .toString()
+            .localeCompare(b.produit.categorie.toString())
         );
-        
+
         setStocksList(sortedData);
         setLoading(false);
       })
@@ -55,10 +58,12 @@ export default function Stocks() {
           ? { ...stock, quantiteDisponible: newQuantity }
           : stock
       );
-      
+
       // Maintenir le tri par catégorie après la mise à jour
-      return [...updatedStocks].sort((a, b) => 
-        a.produit.categorie.localeCompare(b.produit.categorie)
+      return [...updatedStocks].sort((a, b) =>
+        a.produit.categorie
+          .toString()
+          .localeCompare(b.produit.categorie.toString())
       );
     });
 
@@ -82,11 +87,23 @@ export default function Stocks() {
     const ratio = stock.quantiteDisponible / stock.quantiteVoulue;
 
     if (ratio >= 0.8) {
-      return { status: "Optimal", color: "bg-green-100 text-green-800", icon: Check };
+      return {
+        status: "Optimal",
+        color: "bg-green-100 text-green-800",
+        icon: Check,
+      };
     } else if (ratio >= 0.5) {
-      return { status: "Attention", color: "bg-yellow-100 text-yellow-800", icon: AlertTriangle };
+      return {
+        status: "Attention",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: AlertTriangle,
+      };
     } else {
-      return { status: "Critique", color: "bg-red-100 text-red-800", icon: AlertTriangle };
+      return {
+        status: "Critique",
+        color: "bg-red-100 text-red-800",
+        icon: AlertTriangle,
+      };
     }
   };
 
@@ -152,13 +169,19 @@ export default function Stocks() {
                   onChange={handleCategoryChange}
                 >
                   <option value="">Toutes les catégories</option>
-                  {Array.from(new Set(stocksList.map((stock) => stock.produit.categorie))).map(
-                    (category) => (
+                  {Array.from(
+                    new Set(
+                      stocksList.map((stock) =>
+                        String(stock.produit.categorie || "")
+                      )
+                    )
+                  )
+                    .filter((category) => category !== "")
+                    .map((category) => (
                       <option key={category} value={category}>
                         {category}
                       </option>
-                    )
-                  )}
+                    ))}
                 </select>
               </div>
             </div>
@@ -196,16 +219,24 @@ export default function Stocks() {
                     return (
                       <tr key={stock.idStock}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{produit.nomProduit}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {produit.nomProduit}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{produit.categorie}</div>
+                          <div className="text-sm text-gray-500">
+                            {produit.categorie}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{stock.quantiteDisponible}</div>
+                          <div className="text-sm text-gray-900">
+                            {stock.quantiteDisponible}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{stock.quantiteVoulue}</div>
+                          <div className="text-sm text-gray-900">
+                            {stock.quantiteVoulue}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
@@ -237,4 +268,3 @@ export default function Stocks() {
     </div>
   );
 }
-

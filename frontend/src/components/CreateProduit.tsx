@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Produit, CategorieProduit } from "../data/type";
+import { Produit } from "../data/type";
 
 interface CreateProduitProps {
   onProduitCreated: (produit: Produit) => void;
@@ -10,7 +10,7 @@ export default function CreateProduit({
 }: CreateProduitProps) {
   const [formData, setFormData] = useState({
     nomProduit: "",
-    categorieProduit: null as CategorieProduit | null,
+    categorie: "",
     conditionnement: "",
     prixAchatHt: "",
     tva: "",
@@ -20,13 +20,6 @@ export default function CreateProduit({
   });
 
   const [message, setMessage] = useState("");
-  const [categories, setCategories] = useState<CategorieProduit[]>([]);
-
-  useEffect(() => {
-    fetch("http://localhost:8081/api/categories")
-      .then((res) => res.json())
-      .then(setCategories);
-  }, []);
 
   // Liste des catégories prédéfinies
   const categorieOptions = [
@@ -51,10 +44,7 @@ export default function CreateProduit({
 
     const payload: Omit<Produit, "idProduit"> = {
       nomProduit: formData.nomProduit,
-      categorieProduit: {
-        idCategorie: formData.categorieProduit?.idCategorie || 0,
-        nom: formData.categorieProduit?.nom || "",
-      },
+      categorie: formData.categorie,
       conditionnement: parseFloat(formData.conditionnement),
       prixAchatHt: parseFloat(formData.prixAchatHt),
       tva: parseFloat(formData.tva),
@@ -86,7 +76,7 @@ export default function CreateProduit({
 
       setFormData({
         nomProduit: "",
-        categorieProduit: null,
+        categorie: "",
         conditionnement: "",
         prixAchatHt: "",
         tva: "",
@@ -120,24 +110,16 @@ export default function CreateProduit({
         <div>
           <label className="block mb-1">Catégorie :</label>
           <select
-            name="categorieProduit"
-            value={formData.categorieProduit?.idCategorie || ""}
-            onChange={(e) => {
-              const selected = categories.find(
-                (c) => c.idCategorie === Number(e.target.value)
-              );
-              setFormData((prev) => ({
-                ...prev,
-                categorieProduit: selected ?? null, // <-- correction ici
-              }));
-            }}
+            name="categorie"
+            value={formData.categorie}
+            onChange={handleChange}
             required
             className="border p-1 w-full"
           >
             <option value="">Sélectionnez une catégorie</option>
-            {categories.map((cat) => (
-              <option key={cat.idCategorie} value={cat.idCategorie}>
-                {cat.nom}
+            {categorieOptions.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
               </option>
             ))}
           </select>

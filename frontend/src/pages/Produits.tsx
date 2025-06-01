@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from "react";
 import { Search, Filter } from "lucide-react";
 import toast from "react-hot-toast";
 import CreateProduit from "@/components/CreateProduit";
-import CreateCategorieProduit from "@/components/CreateCategorieProduit"; // Ajoute cet import en haut
 import { Produit } from "../data/type";
 
 const categories = ["Sirop", "Boisson", "Autre"];
@@ -72,7 +71,7 @@ export default function Produits() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesCategory =
-      !selectedCategory || produit.categorieProduit.nom === selectedCategory;
+      !selectedCategory || produit.categorie === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -178,7 +177,7 @@ export default function Produits() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {produit.categorieProduit?.nom}
+                      {produit.categorie}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -231,23 +230,6 @@ export default function Produits() {
                 addProduit(produit);
                 setIsModalOpen(false); // Ferme la fenêtre après création
               }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Fenêtre modale pour catégorie */}
-      {isCategorieModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-            <button
-              onClick={() => setIsCategorieModalOpen(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <CreateCategorieProduit
-              onCategorieCreated={() => setIsCategorieModalOpen(false)}
             />
           </div>
         </div>

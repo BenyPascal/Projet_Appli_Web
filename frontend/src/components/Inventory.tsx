@@ -14,7 +14,7 @@ export default function Inventory({ stocks, onUpdateStock }: InventoryProps) {
 
   // Trier les stocks par catégorie
   const sortedStocks = [...stocks].sort((a, b) =>
-    a.produit.categorieProduit.nom.localeCompare(b.produit.categorieProduit.nom)
+    a.produit.categorie.toString().localeCompare(b.produit.categorie.toString())
   );
 
   const currentStock = sortedStocks[currentIndex];
@@ -53,9 +53,7 @@ export default function Inventory({ stocks, onUpdateStock }: InventoryProps) {
       <div className="mb-4">
         <p className="text-sm text-gray-500">
           Catégorie :{" "}
-          <span className="font-medium">
-            {currentStock.produit.categorieProduit.nom}
-          </span>
+          <span className="font-medium">{currentStock.produit.categorie}</span>
         </p>
         <p className="text-sm text-gray-500">
           Produit :{" "}

@@ -12,9 +12,7 @@ public class Produit {
 
     private String nomProduit;
 
-    @ManyToOne
-    @JoinColumn(name = "idCategorie")
-    private CategorieProduit categorieProduit;
+    private String categorie;
 
     private Float conditionnement;
 
@@ -47,12 +45,12 @@ public class Produit {
         this.nomProduit = nomProduit;
     }
 
-    public CategorieProduit getCategorieProduit() {
-        return categorieProduit;
+    public String getCategorie() {
+        return categorie;
     }
 
-    public void setCategorieProduit(CategorieProduit categorieProduit) {
-        this.categorieProduit = categorieProduit;
+    public void setCategorie(String categorie) {
+        this.categorie = categorie;
     }
 
     public Float getConditionnement() {
