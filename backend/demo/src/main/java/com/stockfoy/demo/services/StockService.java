@@ -35,11 +35,9 @@ public class StockService {
             int ancienneQuantite = stock.getQuantiteDisponible();
             int nouvelleQuantite = updatedStock.getQuantiteDisponible();
 
-            // Mise à jour de la quantité précédente
             stock.setQuantitePrecedente(ancienneQuantite);
             stock.setQuantiteDisponible(nouvelleQuantite);
 
-            // Si baisse => enregistrer une vente
             if (nouvelleQuantite < ancienneQuantite) {
                 int quantiteVendue = ancienneQuantite - nouvelleQuantite;
 

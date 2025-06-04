@@ -25,8 +25,7 @@ public class VenteService {
 
     public Float getTotalVentesBetween(LocalDateTime start, LocalDateTime end) {
         List<Vente> ventes = venteRepository.findByDateVenteBetween(start, end);
-        // Suppose que tu as un champ prixTotal ou calcule-le à partir du prix unitaire
-        // * quantité
+
         return ventes.stream()
                 .map(v -> v.getPrixUnitaire() * v.getQuantite())
                 .filter(Objects::nonNull)

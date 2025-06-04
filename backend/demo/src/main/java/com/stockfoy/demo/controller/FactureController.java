@@ -39,7 +39,7 @@ public class FactureController {
         if (totalAmount != null && !totalAmount.isEmpty()) {
             facture.setTotalAmount(Float.parseFloat(totalAmount));
         }
-        facture.setFileData(file.getBytes()); // <-- Stocke le PDF en base
+        facture.setFileData(file.getBytes());
 
         return factureService.save(facture);
     }

@@ -12,7 +12,7 @@ public class Facture {
     private Long id;
 
     private String fileName;
-    private String fileUrl; // Chemin ou URL du PDF stocké
+    private String fileUrl;
     private LocalDate issueDate;
     private String supplier;
     private Float totalAmount;

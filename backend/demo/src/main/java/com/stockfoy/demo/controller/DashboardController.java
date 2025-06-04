@@ -80,24 +80,21 @@ public class DashboardController {
 
                 List<Vente> recentSales = venteService.findRecentSales(5);
                 stats.put("recentSales", recentSales);
-                // Dates pour stats
+
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime weekAgo = now.minus(7, ChronoUnit.DAYS);
                 LocalDateTime yearAgo = now.minus(1, ChronoUnit.YEARS);
 
-                // Dépenses et recettes sur la semaine
                 Float depensesSemaine = achatService.getTotalAchatsBetween(weekAgo, now);
                 Float recettesSemaine = venteService.getTotalVentesBetween(weekAgo, now);
                 stats.put("depensesSemaine", depensesSemaine != null ? depensesSemaine : 0);
                 stats.put("recettesSemaine", recettesSemaine != null ? recettesSemaine : 0);
 
-                // Dépenses et recettes sur l'année
                 Float depensesAnnee = achatService.getTotalAchatsBetween(yearAgo, now);
                 Float recettesAnnee = venteService.getTotalVentesBetween(yearAgo, now);
                 stats.put("depensesAnnee", depensesAnnee != null ? depensesAnnee : 0);
                 stats.put("recettesAnnee", recettesAnnee != null ? recettesAnnee : 0);
 
-                // Ventes mensuelles pour l'année en cours
                 LocalDateTime startOfYear = now.withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
                 List<Float> ventesParMois = new ArrayList<>();
                 for (int month = 1; month <= 12; month++) {

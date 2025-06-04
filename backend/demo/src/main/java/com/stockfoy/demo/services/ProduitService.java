@@ -30,13 +30,10 @@ public class ProduitService {
     }
 
     public Produit save(Produit produit) {
-        // Sauvegarder le produit
         Produit savedProduit = produitRepository.save(produit);
 
-        // Initialiser le stock
         stockService.createInitialStock(savedProduit);
         
-        // Initialiser l'historique des prix
         HistoriquePrix historiquePrix = new HistoriquePrix();
         historiquePrix.setProduit(savedProduit);
         historiquePrix.setPrix(savedProduit.getPrixVenteTtc());
