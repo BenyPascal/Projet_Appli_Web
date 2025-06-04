@@ -3,7 +3,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import {
-  Plus,
   Search,
   Filter,
   Check,
@@ -247,20 +246,13 @@ const ShoppingList = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Liste de Courses</h1>
-        <div className="mt-3 sm:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+        <div className="mt-3 sm:mt-0">
           <button
             onClick={handleGenerateShoppingList}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
             Générer liste
-          </button>
-          <button
-            onClick={handleAddItem}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter un produit
           </button>
         </div>
       </div>

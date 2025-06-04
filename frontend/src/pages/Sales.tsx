@@ -57,7 +57,11 @@ const Sales = () => {
               customer: vente.client || undefined,
             }))
           : [];
-        setSalesList(mapped);
+        
+        // Inverser l'ordre des ventes pour que les plus récentes soient en haut
+        const reversedSales = [...mapped].reverse();
+        
+        setSalesList(reversedSales);
         setLoading(false);
       })
       .catch((error) => {
@@ -185,7 +189,7 @@ const Sales = () => {
       prixUnitaire: unitPrice,
       prixTotal: totalPrice,
       client: formData.customer || undefined,
-      dateVente: new Date().toISOString(), // <-- Ajoute la date ici
+      dateVente: new Date().toISOString(),
     };
 
     fetch("http://localhost:8081/api/ventes", {
@@ -199,26 +203,21 @@ const Sales = () => {
         }
         return response.json();
       })
-      .then(() => {
-        // Refresh sales list from backend
-        fetch("http://localhost:8081/api/ventes")
-          .then((response) => response.json())
-          .then((data: any[]) => {
-            const mapped = Array.isArray(data)
-              ? data.map((vente) => ({
-                  id: vente.idVente?.toString() || "",
-                  produitId: vente.produit?.idProduit?.toString() || "",
-                  quantity: vente.quantite || 0,
-                  unitPrice: vente.prixUnitaire || 0,
-                  totalPrice: vente.prixTotal || 0,
-                  saleDate: vente.dateVente || new Date().toISOString(),
-                  customer: vente.client || undefined,
-                }))
-              : [];
-            setSalesList(mapped);
-            setShowAddModal(false);
-            toast.success("Vente ajoutée avec succès");
-          });
+      .then((newSale) => {
+        // Ajouter la nouvelle vente au début de la liste
+        const newSaleFormatted = {
+          id: newSale.idVente?.toString() || "",
+          produitId: newSale.produit?.idProduit?.toString() || formData.produitId,
+          quantity: newSale.quantite || quantity,
+          unitPrice: newSale.prixUnitaire || unitPrice,
+          totalPrice: newSale.prixTotal || totalPrice,
+          saleDate: newSale.dateVente || new Date().toISOString(),
+          customer: newSale.client || formData.customer,
+        };
+        
+        setSalesList((prev) => [newSaleFormatted, ...prev]);
+        setShowAddModal(false);
+        toast.success("Vente ajoutée avec succès");
       })
       .catch((error) => {
         console.error("Erreur:", error);

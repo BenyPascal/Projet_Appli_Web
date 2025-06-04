@@ -5,19 +5,29 @@ import toast from "react-hot-toast";
 import CreateProduit from "@/components/CreateProduit";
 import { Produit } from "../data/type";
 
-const categories = ["Sirop", "Boisson", "Autre"];
+// Remplacer les catégories statiques par celles définies dans CreateProduit
+const categories = [
+  "Sirop",
+  "Cannette / Jus",
+  "Consommable Sucré",
+  "Consommable Salé",
+  "Café / Thé",
+  "Viennoiserie",
+  "Autre",
+];
 
 export default function Produits() {
   const [produitsList, setProduitsList] = useState<Produit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false); // État pour la fenêtre modale
-  const [isCategorieModalOpen, setIsCategorieModalOpen] = useState(false); // État pour la fenêtre modale catégorie
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState<Produit | null>(null);
   const modalRef = useRef<HTMLDivElement>(null); // Référence pour la fenêtre modale
 
   const addProduit = (newProduit: Produit) => {
     setProduitsList((prevList) => [...prevList, newProduit]);
+    setIsModalOpen(false); // Ferme la modal après ajout
+    toast.success(`Produit ${newProduit.nomProduit} ajouté avec succès`);
   };
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,26 +86,61 @@ export default function Produits() {
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editForm) return;
     const { name, value } = e.target;
-    setEditForm({ ...editForm, [name]: value });
+
+    // Traiter les champs numériques
+    if (name === "prixVenteTtc") {
+      // Assurer que la valeur est un nombre valide
+      const numValue = value === "" ? 0 : parseFloat(value);
+      setEditForm({ ...editForm, [name]: numValue });
+    } else {
+      setEditForm({ ...editForm, [name]: value });
+    }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editForm) return;
-    const response = await fetch(
-      `http://localhost:8081/api/produits/${editForm.idProduit}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
+
+    try {
+      // Créer une version nettoyée de l'objet à envoyer
+      const produitToUpdate = {
+        ...editForm,
+        // S'assurer que prixVenteTtc est bien un nombre
+        prixVenteTtc:
+          typeof editForm.prixVenteTtc === "string"
+            ? parseFloat(editForm.prixVenteTtc)
+            : editForm.prixVenteTtc,
+      };
+
+      const response = await fetch(
+        `http://localhost:8081/api/produits/${editForm.idProduit}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(produitToUpdate),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la modification");
       }
-    );
-    if (response.ok) {
-      toast.success("Produit modifié !");
+
+      // Récupérer le produit mis à jour du serveur
+      const updatedProduit = await response.json();
+
+      // Fermer la modal AVANT de mettre à jour l'état pour éviter des problèmes de rendu
       setIsEditModalOpen(false);
-      // Mets à jour la liste locale si besoin
-      // ... (rafraîchis la liste ou modifie localement)
-    } else {
+
+      // Mettre à jour la liste des produits
+      setProduitsList((prevList) =>
+        prevList.map((p) =>
+          p.idProduit === updatedProduit.idProduit ? updatedProduit : p
+        )
+      );
+
+      toast.success("Produit modifié avec succès !");
+    } catch (error) {
+      console.error("Erreur:", error);
       toast.error("Erreur lors de la modification");
     }
   };
@@ -125,13 +170,31 @@ export default function Produits() {
         </h1>
         <div className="flex gap-2">
           <button
-            onClick={() => setIsModalOpen(true)} // Ouvre la fenêtre modale
+            onClick={() => setIsModalOpen(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Ajouter un produit
           </button>
         </div>
       </div>
+
+      {/* Modale pour ajouter un produit avec CreateProduit */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            ref={modalRef}
+            className="bg-white rounded-lg shadow-lg w-full max-w-md overflow-auto max-h-[90vh] relative"
+          >
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 z-10"
+            >
+              ✕
+            </button>
+            <CreateProduit onProduitCreated={addProduit} />
+          </div>
+        </div>
+      )}
 
       {/* Filtres */}
       <div className="bg-white shadow rounded-lg p-4">
@@ -191,9 +254,6 @@ export default function Produits() {
                   Fournisseur
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Référence
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -226,7 +286,7 @@ export default function Produits() {
                       {produit.tva || "N/A"}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-left">
                     <button
                       className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                       onClick={() => handleEditProduit(produit)}
@@ -239,7 +299,7 @@ export default function Produits() {
               {filteredProduits.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
                     Aucun produit trouvé

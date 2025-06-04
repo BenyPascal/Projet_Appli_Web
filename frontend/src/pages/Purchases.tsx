@@ -48,7 +48,11 @@ const Purchases = () => {
               totalPrice: achat.prixTotal || 0,
             }))
           : [];
-        setPurchasesList(mapped);
+        
+        // Inverser l'ordre des achats pour que les plus récents (derniers IDs) soient en haut
+        const reversedPurchases = [...mapped].reverse();
+        
+        setPurchasesList(reversedPurchases);
         setLoading(false);
       })
       .catch(() => {
@@ -126,7 +130,7 @@ const Purchases = () => {
       const params = new URLSearchParams();
       params.append("idProduit", formData.produitId);
       params.append("quantiteAchat", formData.quantity);
-      params.append("dateAchat", new Date().toISOString()); // <-- Ajoute la date ici
+      params.append("dateAchat", new Date().toISOString()); // <-- Conserve la date ici
       const res = await fetch("http://localhost:8081/api/achats/ajouter", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -134,8 +138,9 @@ const Purchases = () => {
       });
       if (!res.ok) throw new Error("Erreur lors de l'ajout de l'achat");
       const achat = await res.json();
+      
+      // Ajouter le nouvel achat au début de la liste pour qu'il apparaisse en premier
       setPurchasesList((prev) => [
-        ...prev,
         {
           id: achat.id?.toString() || (prev.length + 1).toString(),
           produitId: achat.produit?.id?.toString() || formData.produitId,
@@ -145,7 +150,9 @@ const Purchases = () => {
             achat.prixTotal ||
             Number(formData.quantity) * Number(formData.unitPrice),
         },
+        ...prev, // Le reste des achats existants
       ]);
+      
       setShowAddModal(false);
       toast.success("Achat ajouté avec succès");
     } catch (err) {
